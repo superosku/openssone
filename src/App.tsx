@@ -464,6 +464,12 @@ interface IPieceHolder {
   y: number
 }
 
+interface Quadrant {
+  x: number;
+  y: number;
+  quad: number;
+}
+
 class Map {
   pieceHolders: IPieceHolder[]
 
@@ -525,80 +531,60 @@ class Map {
   }
 
   getCastlePoints(firstX: number, firstY: number, octaquadrant: number)  {
-    let thisPiece = this.getAt(firstX, firstY).piece
-    console.log(thisPiece.sideConnections[octaquadrant])
-
-    /* if (thisPiece.sideTypes[Math.floor((octaquadrant)/2)] === 2) {
-          return
-        } */
-
-      interface Quadrant {
-        x: number;
-        y: number;
-        quad: number;
-      }
-      let first: Quadrant = {
-        x: firstX,
-        y: firstY,
-        quad: octaquadrant,
-      }
-  
-      let visited: Quadrant[] = [first];
-
-      const pushToVisited = (quad: Quadrant) => {
-        if (!visited.some((extQ) => {
-          return extQ.x === quad.x && extQ.y === quad.y && extQ.quad === quad.quad
-        })) {
-          visited.push(quad)
-        }
-      }
-
-      let index = 0
-
-      while (visited.length > index) {
-        let current = visited[index]
-        if (!current) {
-          break;
-        }
-
-        const thisPiece = this.getAt(current.x, current.y).piece
-        const castleIndex = thisPiece.sideConnections[current.quad]
-
-        for (let i = 0;i < thisPiece.sideConnections.length;i++) {
-          if (thisPiece.sideConnections[i] === castleIndex) {
-            let newQuadrant: Quadrant = {
-              x: current.x,
-              y: current.y,
-              quad: i,
-            }
-            pushToVisited(newQuadrant)
-          }
-        }
-
-        const quadToOpposite: {[key: number]: number} = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
-        const newQuad = quadToOpposite[current.quad]
-
-        if ((Math.floor(current.quad/2) === 0) && (this.getAt(current.x, current.y+1))) {
-          let bottomQuad: Quadrant = {x: current.x, y: current.y+1, quad: newQuad}
-          pushToVisited(bottomQuad)
-        } if ((Math.floor(current.quad/2) === 1) && (this.getAt(current.x-1, current.y))) {
-          let leftQuad: Quadrant = {x: current.x-1, y: current.y, quad: newQuad}
-          pushToVisited(leftQuad)
-        } if ((Math.floor(current.quad/2) === 2) && (this.getAt(current.x, current.y-1))) {
-          let topQuad: Quadrant = {x: current.x, y: current.y-1, quad: newQuad}
-          pushToVisited(topQuad)
-        } if ((Math.floor(current.quad/2) === 3) && (this.getAt(current.x+1, current.y))) {
-          let rightQuad: Quadrant = {x: current.x+1, y: current.y, quad: newQuad}
-          pushToVisited(rightQuad)
-        }
-
-        index++
-
-        console.log(visited)
-      }
-      
-      console.log(thisPiece)
+    const first: Quadrant = {
+      x: firstX,
+      y: firstY,
+      quad: octaquadrant,
     }
+  
+    let visited: Quadrant[] = [first];
+
+    const pushToVisited = (quad: Quadrant) => {
+      if (!visited.some((extQ) => {
+        return extQ.x === quad.x && extQ.y === quad.y && extQ.quad === quad.quad
+      })) {
+        visited.push(quad)
+      }
+    }
+
+    for (let index = 0; index < visited.length; index++) {
+      let current = visited[index]
+      if (!current) {
+        break;
+      }
+
+      const thisPiece = this.getAt(current.x, current.y).piece
+      const castleIndex = thisPiece.sideConnections[current.quad]
+
+      for (let i = 0;i < thisPiece.sideConnections.length;i++) {
+        if (thisPiece.sideConnections[i] === castleIndex) {
+          const newQuadrant: Quadrant = {
+            x: current.x,
+            y: current.y,
+            quad: i,
+          }
+          pushToVisited(newQuadrant)
+        }
+      }
+
+      const quadToOpposite: {[key: number]: number} = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
+      const newQuad = quadToOpposite[current.quad]
+
+      if ((Math.floor(current.quad/2) === 0) && (this.getAt(current.x, current.y+1))) {
+        const bottomQuad: Quadrant = {x: current.x, y: current.y+1, quad: newQuad}
+        pushToVisited(bottomQuad)
+      } if ((Math.floor(current.quad/2) === 1) && (this.getAt(current.x-1, current.y))) {
+        const leftQuad: Quadrant = {x: current.x-1, y: current.y, quad: newQuad}
+        pushToVisited(leftQuad)
+      } if ((Math.floor(current.quad/2) === 2) && (this.getAt(current.x, current.y-1))) {
+        const topQuad: Quadrant = {x: current.x, y: current.y-1, quad: newQuad}
+        pushToVisited(topQuad)
+      } if ((Math.floor(current.quad/2) === 3) && (this.getAt(current.x+1, current.y))) {
+        const rightQuad: Quadrant = {x: current.x+1, y: current.y, quad: newQuad}
+        pushToVisited(rightQuad)
+      }
+    }
+  }
 }
 
 const MapDisplay = ({map}: { map: Map }) => {
@@ -630,7 +616,7 @@ const MapDisplay = ({map}: { map: Map }) => {
                         octaquadrant = 4
                       }
                     } else {
-                      if (((clickX-50) + clickY) < 50) {
+                      if (clickX + clickY < 100) {
                         octaquadrant = 5
                       } else {
                         octaquadrant = 6
@@ -638,7 +624,7 @@ const MapDisplay = ({map}: { map: Map }) => {
                     }
                   } else {
                     if (clickX < 50) {
-                      if (clickX + (clickY-50) < 50) {
+                      if (clickX + clickY < 100) {
                         octaquadrant = 2
                       } else {
                         octaquadrant = 1
@@ -649,11 +635,9 @@ const MapDisplay = ({map}: { map: Map }) => {
                       } else {
                         octaquadrant = 7
                       }
-                      
                     }
                   }
                   map.getCastlePoints(piece.x, piece.y, octaquadrant)
-                  
                 }}
               />
             </td>
