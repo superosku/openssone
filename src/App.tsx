@@ -29,6 +29,8 @@ enum PieceExtraInfo {
   nonConnectedSideBySideCastle,
 }
 
+let pieceImageCache: { [key: string]: string } = {}
+
 class Piece {
   // bottom, left, top, right
   sideTypes: [PieceSideType, PieceSideType, PieceSideType, PieceSideType];
@@ -62,6 +64,11 @@ class Piece {
   }
 
   getImageDataUrl() {
+    const cached = pieceImageCache[this.getHash()]
+    if (cached) {
+      return cached
+    }
+
     const canvas = document.createElement('canvas')
     canvas.width = 100
     canvas.height = 100
@@ -289,7 +296,9 @@ class Piece {
       ctx.stroke();
     }
 
-    return canvas.toDataURL("image/png");
+    const dataUrl = canvas.toDataURL("image/png");
+    pieceImageCache[this.getHash()] = dataUrl
+    return dataUrl
   }
 
   getRotated(rotation: number) {
@@ -476,22 +485,26 @@ interface IOctant {
 }
 
 class Map {
-  pieceHolders: IPieceHolder[]
+  pieceHolder: { [key: string]: IPieceHolder }
 
   constructor() {
-    this.pieceHolders = []
+    this.pieceHolder = {}
   }
 
   clone() {
     let newMap = new Map()
-    newMap.pieceHolders = this.pieceHolders.map(holder => {
-      return {...holder}
-    })
+    newMap.pieceHolder = Object.keys(this.pieceHolder).reduce((
+      a: { [key: string]: IPieceHolder },
+      key
+    ) => {
+      a[key] = {...this.pieceHolder[key]}
+      return a
+    }, {})
     return newMap
   }
 
   setPiece(x: number, y: number, piece: Piece) {
-    this.pieceHolders.push({x, y, piece})
+    this.pieceHolder[`${x}|${y}`] = {x, y, piece}
   }
 
   randomize() {
@@ -500,9 +513,7 @@ class Map {
         for (let i = 0; i < 1000; i++) {
           const randomPiece = allRotatedPieces[Math.floor(Math.random() * allRotatedPieces.length)]
           if (this.pieceOkHere(x, y, randomPiece)) {
-            this.pieceHolders.push({
-              x, y, piece: randomPiece,
-            })
+            this.setPiece(x, y, randomPiece)
             break
           }
         }
@@ -511,11 +522,15 @@ class Map {
   }
 
   getAt(x: number, y: number) {
-    return this.pieceHolders.filter(p => p.x === x && p.y === y)[0]
+    return this.pieceHolder[`${x}|${y}`]
+  }
+
+  isEmpty() {
+    return Object.keys(this.pieceHolder).length === 0
   }
 
   pieceOkHere(x: number, y: number, piece: Piece) {
-    const isFirstPiece = this.pieceHolders.length === 0
+    const isFirstPiece = this.isEmpty()
 
     if (this.getAt(x, y) && !isFirstPiece) {
       return false
@@ -547,17 +562,17 @@ class Map {
   }
 
   getRange() {
-    if (this.pieceHolders.length === 0) {
+    if (this.isEmpty()) {
       return {x: {min: 0, max: 0}, y: {min: 0, max: 0}}
     }
     return {
       x: {
-        min: Math.min(...this.pieceHolders.map(p => p.x)),
-        max: Math.max(...this.pieceHolders.map(p => p.x)),
+        min: Math.min(...Object.values(this.pieceHolder).map(p => p.x)),
+        max: Math.max(...Object.values(this.pieceHolder).map(p => p.x)),
       },
       y: {
-        min: Math.min(...this.pieceHolders.map(p => p.y)),
-        max: Math.max(...this.pieceHolders.map(p => p.y)),
+        min: Math.min(...Object.values(this.pieceHolder).map(p => p.y)),
+        max: Math.max(...Object.values(this.pieceHolder).map(p => p.y)),
       }
     }
   }
