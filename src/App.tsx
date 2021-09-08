@@ -284,33 +284,6 @@ class Piece {
       ctx.stroke();
     }
 
-    // Help lines
-    /*
-    ctx.strokeStyle = '#FF0000'
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(100, 100);
-    ctx.stroke();
-
-    ctx.strokeStyle = '#FF0000'
-    ctx.beginPath();
-    ctx.moveTo(100, 0);
-    ctx.lineTo(0, 100);
-    ctx.stroke();
-
-    ctx.strokeStyle = '#FF0000'
-    ctx.beginPath();
-    ctx.moveTo(50, 0);
-    ctx.lineTo(50, 100);
-    ctx.stroke();
-
-    ctx.strokeStyle = '#FF0000'
-    ctx.beginPath();
-    ctx.moveTo(0, 50);
-    ctx.lineTo(100, 50);
-    ctx.stroke();
-    */
-
     return canvas.toDataURL("image/png");
   }
 
@@ -644,10 +617,8 @@ const MapDisplay = ({map}: { map: Map }) => {
               <img
                 src={piece.piece.getImageDataUrl()}
                 onClick={(event) => {
-                  // console.log('clicked', piece.x, piece.y, event.pageX, event.pageY )
                   const clickX = event.pageX - (piece.x * 100) 
                   const clickY = event.pageY - (piece.y * 100)
-                  // console.log(clickX, clickY)
 
                   let octaquadrant = 0
 
