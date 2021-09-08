@@ -303,14 +303,14 @@ class Piece {
       this.extraInfo,
       // Fix SideConnection rotations
       [
-        this.sideConnections[(0 + (rotation*2)) % 8],
-        this.sideConnections[(1 + (rotation*2)) % 8],
-        this.sideConnections[(2 + (rotation*2)) % 8],
-        this.sideConnections[(3 + (rotation*2)) % 8],
-        this.sideConnections[(4 + (rotation*2)) % 8],
-        this.sideConnections[(5 + (rotation*2)) % 8],
-        this.sideConnections[(6 + (rotation*2)) % 8],
-        this.sideConnections[(7 + (rotation*2)) % 8],
+        this.sideConnections[(0 + (rotation * 2)) % 8],
+        this.sideConnections[(1 + (rotation * 2)) % 8],
+        this.sideConnections[(2 + (rotation * 2)) % 8],
+        this.sideConnections[(3 + (rotation * 2)) % 8],
+        this.sideConnections[(4 + (rotation * 2)) % 8],
+        this.sideConnections[(5 + (rotation * 2)) % 8],
+        this.sideConnections[(6 + (rotation * 2)) % 8],
+        this.sideConnections[(7 + (rotation * 2)) % 8],
       ]
     )
   }
@@ -324,132 +324,132 @@ const pieces = [
   new Piece(
     [PieceSideType.empty, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     undefined,
-    [1,1,1,1,1,1,1,1]
+    [1, 1, 1, 1, 1, 1, 1, 1]
   ),
   new Piece(
     [PieceSideType.road, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     undefined,
-    [1,1,1,1,1,1,1,1]
+    [1, 1, 1, 1, 1, 1, 1, 1]
   ),
   new Piece(
     [PieceSideType.road, PieceSideType.road, PieceSideType.empty, PieceSideType.empty,],
     undefined,
-    [1,2,2,1,1,1,1,1]
+    [1, 2, 2, 1, 1, 1, 1, 1]
   ),
   new Piece(
     [PieceSideType.road, PieceSideType.empty, PieceSideType.road, PieceSideType.empty,],
     undefined,
-    [1,2,2,2,2,1,1,1]
+    [1, 2, 2, 2, 2, 1, 1, 1]
   ),
   new Piece(
     [PieceSideType.empty, PieceSideType.road, PieceSideType.road, PieceSideType.road,],
     undefined,
-    [1,1,1,2,2,3,3,1]
+    [1, 1, 1, 2, 2, 3, 3, 1]
   ),
   new Piece(
     [PieceSideType.road, PieceSideType.road, PieceSideType.road, PieceSideType.road,],
     undefined,
-    [1,2,2,3,3,4,4,1]
+    [1, 2, 2, 3, 3, 4, 4, 1]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.road, PieceSideType.road, PieceSideType.castle,],
     undefined,
-    [1,1,2,3,3,2,1,1]
+    [1, 1, 2, 3, 3, 2, 1, 1]
   ),
   new Piece(
-    [PieceSideType.castle, PieceSideType.empty, PieceSideType.empty, PieceSideType.castle,], 
+    [PieceSideType.castle, PieceSideType.empty, PieceSideType.empty, PieceSideType.castle,],
     PieceExtraInfo.nonConnectedSideBySideCastle,
-    [1,1,2,2,2,2,3,3]
+    [1, 1, 2, 2, 2, 2, 3, 3]
   ),
   new Piece(
     [PieceSideType.empty, PieceSideType.road, PieceSideType.castle, PieceSideType.road,],
     undefined,
-    [1,1,1,2,3,3,2,1]
+    [1, 1, 1, 2, 3, 3, 2, 1]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.road, PieceSideType.castle, PieceSideType.empty,],
     undefined,
-    [1,1,2,2,3,3,2,2]
+    [1, 1, 2, 2, 3, 3, 2, 2]
   ),
   new Piece(
-    [PieceSideType.castle, PieceSideType.empty, PieceSideType.castle, PieceSideType.empty,], 
+    [PieceSideType.castle, PieceSideType.empty, PieceSideType.castle, PieceSideType.empty,],
     PieceExtraInfo.oppositeCastleFull,
-    [1,1,2,2,1,1,3,3]
+    [1, 1, 2, 2, 1, 1, 3, 3]
   ),
   new Piece(
-    [PieceSideType.castle, PieceSideType.road, PieceSideType.castle, PieceSideType.empty,], 
+    [PieceSideType.castle, PieceSideType.road, PieceSideType.castle, PieceSideType.empty,],
     PieceExtraInfo.oppositeCastleFull,
-    [1,1,2,3,1,1,4,4]
+    [1, 1, 2, 3, 1, 1, 4, 4]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.castle, PieceSideType.castle, PieceSideType.road,],
     undefined,
-    [1,1,1,1,1,1,2,3]
+    [1, 1, 1, 1, 1, 1, 2, 3]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.castle, PieceSideType.castle, PieceSideType.empty,],
     undefined,
-    [1,1,1,1,1,1,2,2]
+    [1, 1, 1, 1, 1, 1, 2, 2]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.castle, PieceSideType.castle, PieceSideType.castle,],
     undefined,
-    [1,1,1,1,1,1,1,1]
+    [1, 1, 1, 1, 1, 1, 1, 1]
   ),
   new Piece(
-    [PieceSideType.castle, PieceSideType.road, PieceSideType.road, PieceSideType.empty,], 
+    [PieceSideType.castle, PieceSideType.road, PieceSideType.road, PieceSideType.empty,],
     PieceExtraInfo.monastery,
-    [1,1,2,3,3,2,2,2]
+    [1, 1, 2, 3, 3, 2, 2, 2]
   ),
   new Piece(
-    [PieceSideType.empty, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,], 
+    [PieceSideType.empty, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     PieceExtraInfo.monastery,
-    [1,1,1,1,1,1,1,1]
+    [1, 1, 1, 1, 1, 1, 1, 1]
   ),
   new Piece(
-    [PieceSideType.road, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,], 
+    [PieceSideType.road, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     PieceExtraInfo.monastery,
-    [1,1,1,1,1,1,1,1]
+    [1, 1, 1, 1, 1, 1, 1, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     undefined,
-    [1,1,1,1,1,1,1,1]
+    [1, 1, 1, 1, 1, 1, 1, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.empty, PieceSideType.river, PieceSideType.empty,],
     undefined,
-    [1,2,2,2,2,1,1,1]
+    [1, 2, 2, 2, 2, 1, 1, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.river, PieceSideType.empty, PieceSideType.empty,],
     undefined,
-    [1,2,2,1,1,1,1,1]
+    [1, 2, 2, 1, 1, 1, 1, 1]
   ),
   new Piece(
-    [PieceSideType.river, PieceSideType.empty, PieceSideType.river, PieceSideType.road,], 
+    [PieceSideType.river, PieceSideType.empty, PieceSideType.river, PieceSideType.road,],
     PieceExtraInfo.monastery,
-    [1,2,2,2,2,3,3,1]
+    [1, 2, 2, 2, 2, 3, 3, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.empty, PieceSideType.river, PieceSideType.road,],
     undefined,
-    [1,2,2,2,2,3,3,1]
+    [1, 2, 2, 2, 2, 3, 3, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.river, PieceSideType.road, PieceSideType.road,],
     undefined,
-    [1,2,2,1,1,3,3,1]
+    [1, 2, 2, 1, 1, 3, 3, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.castle, PieceSideType.river, PieceSideType.road,],
     undefined,
-    [1,2,3,3,2,4,4,1]
+    [1, 2, 3, 3, 2, 4, 4, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.river, PieceSideType.castle, PieceSideType.castle,],
     undefined,
-    [1,2,2,1,3,3,3,3]
+    [1, 2, 2, 1, 3, 3, 3, 3]
   ),
 ]
 
@@ -469,7 +469,7 @@ interface IPieceHolder {
   y: number
 }
 
-interface Quadrant {
+interface IQuadrant {
   x: number;
   y: number;
   quad: number;
@@ -562,16 +562,16 @@ class Map {
     }
   }
 
-  getCastlePoints(firstX: number, firstY: number, octaquadrant: number)  {
-    const first: Quadrant = {
+  getCastlePoints(firstX: number, firstY: number, octaquadrant: number) {
+    const first: IQuadrant = {
       x: firstX,
       y: firstY,
       quad: octaquadrant,
     }
-  
-    let visited: Quadrant[] = [first];
 
-    const pushToVisited = (quad: Quadrant) => {
+    let visited: IQuadrant[] = [first];
+
+    const pushToVisited = (quad: IQuadrant) => {
       if (!visited.some((extQ) => {
         return extQ.x === quad.x && extQ.y === quad.y && extQ.quad === quad.quad
       })) {
@@ -588,9 +588,9 @@ class Map {
       const thisPiece = this.getAt(current.x, current.y).piece
       const castleIndex = thisPiece.sideConnections[current.quad]
 
-      for (let i = 0;i < thisPiece.sideConnections.length;i++) {
+      for (let i = 0; i < thisPiece.sideConnections.length; i++) {
         if (thisPiece.sideConnections[i] === castleIndex) {
-          const newQuadrant: Quadrant = {
+          const newQuadrant: IQuadrant = {
             x: current.x,
             y: current.y,
             quad: i,
@@ -599,20 +599,23 @@ class Map {
         }
       }
 
-      const quadToOpposite: {[key: number]: number} = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
+      const quadToOpposite: { [key: number]: number } = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
       const newQuad = quadToOpposite[current.quad]
 
-      if ((Math.floor(current.quad/2) === 0) && (this.getAt(current.x, current.y+1))) {
-        const bottomQuad: Quadrant = {x: current.x, y: current.y+1, quad: newQuad}
+      if ((Math.floor(current.quad / 2) === 0) && (this.getAt(current.x, current.y + 1))) {
+        const bottomQuad: IQuadrant = {x: current.x, y: current.y + 1, quad: newQuad}
         pushToVisited(bottomQuad)
-      } if ((Math.floor(current.quad/2) === 1) && (this.getAt(current.x-1, current.y))) {
-        const leftQuad: Quadrant = {x: current.x-1, y: current.y, quad: newQuad}
+      }
+      if ((Math.floor(current.quad / 2) === 1) && (this.getAt(current.x - 1, current.y))) {
+        const leftQuad: IQuadrant = {x: current.x - 1, y: current.y, quad: newQuad}
         pushToVisited(leftQuad)
-      } if ((Math.floor(current.quad/2) === 2) && (this.getAt(current.x, current.y-1))) {
-        const topQuad: Quadrant = {x: current.x, y: current.y-1, quad: newQuad}
+      }
+      if ((Math.floor(current.quad / 2) === 2) && (this.getAt(current.x, current.y - 1))) {
+        const topQuad: IQuadrant = {x: current.x, y: current.y - 1, quad: newQuad}
         pushToVisited(topQuad)
-      } if ((Math.floor(current.quad/2) === 3) && (this.getAt(current.x+1, current.y))) {
-        const rightQuad: Quadrant = {x: current.x+1, y: current.y, quad: newQuad}
+      }
+      if ((Math.floor(current.quad / 2) === 3) && (this.getAt(current.x + 1, current.y))) {
+        const rightQuad: IQuadrant = {x: current.x + 1, y: current.y, quad: newQuad}
         pushToVisited(rightQuad)
       }
     }
@@ -628,12 +631,6 @@ interface IMapDisplayProps {
   placeablePiece?: Piece
 }
 
-interface IQuadrant {
-  x: number
-  y: number
-  quadrant: number
-}
-
 const MapDisplay = (
   {
     map,
@@ -643,7 +640,6 @@ const MapDisplay = (
   }: IMapDisplayProps
 ) => {
   const [debugQuadrants, setDebugQuadrants] = React.useState<IQuadrant[]>([])
-  const [loading, setloading] = React.useState<boolean>(true)
 
   const mapRange = React.useMemo(() => map.getRange(), [map])
 
@@ -676,47 +672,57 @@ const MapDisplay = (
                 }
               }}
             >
-              {pieceHolder && <img
-                src={pieceHolder.piece.getImageDataUrl()}
-                onClick={(event) => {
-                  const clickY = event.clientY - (event.target as HTMLImageElement).getBoundingClientRect().top
-                  const clickX = event.clientX - (event.target as HTMLImageElement).getBoundingClientRect().left
+              {pieceHolder && <>
+                <img
+                  src={pieceHolder.piece.getImageDataUrl()}
+                  onClick={(event) => {
+                    const clickY = event.clientY - (event.target as HTMLImageElement).getBoundingClientRect().top
+                    const clickX = event.clientX - (event.target as HTMLImageElement).getBoundingClientRect().left
 
-                  let octaquadrant = 0
+                    let octaquadrant = 0
 
-                  if (clickY < 50) {
-                    if (clickX < 50) {
-                      if (clickX < clickY) {
-                        octaquadrant = 3
+                    if (clickY < 50) {
+                      if (clickX < 50) {
+                        if (clickX < clickY) {
+                          octaquadrant = 3
+                        } else {
+                          octaquadrant = 4
+                        }
                       } else {
-                        octaquadrant = 4
+                        if (clickX + clickY < 100) {
+                          octaquadrant = 5
+                        } else {
+                          octaquadrant = 6
+                        }
                       }
                     } else {
-                      if (clickX + clickY < 100) {
-                        octaquadrant = 5
+                      if (clickX < 50) {
+                        if (clickX + clickY < 100) {
+                          octaquadrant = 2
+                        } else {
+                          octaquadrant = 1
+                        }
                       } else {
-                        octaquadrant = 6
+                        if (clickX < clickY) {
+                          octaquadrant = 0
+                        } else {
+                          octaquadrant = 7
+                        }
                       }
                     }
-                  } else {
-                    if (clickX < 50) {
-                      if (clickX + clickY < 100) {
-                        octaquadrant = 2
-                      } else {
-                        octaquadrant = 1
-                      }
-                    } else {
-                      if (clickX < clickY) {
-                        octaquadrant = 0
-                      } else {
-                        octaquadrant = 7
-                      }
-                    }
-                  }
 
-                  const quadrants = map.getCastlePoints(x, y, octaquadrant)
-                }}
-              />}
+                    const quadrants = map.getCastlePoints(x, y, octaquadrant)
+                    setDebugQuadrants(quadrants)
+                  }}
+                />
+                {debugQuadrants.filter(q => q.x === x && q.y === y).map(q => {
+                  return <span
+                    className={'debug-quadrant debug-quadrant-' + q.quad}
+                    key={q.quad}
+                  ></span>
+                })}
+              </>
+              }
               {pieceStatusClass && <div className={'piece-status ' + pieceStatusClass}>
                 <FaCheck/>
               </div>}

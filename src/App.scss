@@ -123,14 +123,52 @@ html, body, #root, .main-container {
     }
 
     td {
-      //border: 1px solid black;
       padding: 0;
-      //height: 104px;
-      //width: 104px;
       width: 100px;
       height: 100px;
-      //border: 1px solid black;
-      //border: 1px solid lightgrey;
+
+      position: relative;
+      .debug-quadrant {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        border: 2px solid #8923b5;
+        background-color: #ac42db;
+
+        &.debug-quadrant-0 {
+          bottom: 10px;
+          right: 20px;
+        }
+        &.debug-quadrant-1 {
+          bottom: 10px;
+          left: 20px;
+        }
+        &.debug-quadrant-2 {
+          bottom: 20px;
+          left: 10px;
+        }
+        &.debug-quadrant-3 {
+          top: 20px;
+          left: 10px;
+        }
+        &.debug-quadrant-4 {
+          top: 10px;
+          left: 20px;
+        }
+        &.debug-quadrant-5 {
+          top: 10px;
+          right: 20px;
+        }
+        &.debug-quadrant-6 {
+          top: 20px;
+          right: 10px;
+        }
+        &.debug-quadrant-7 {
+          bottom: 20px;
+          right: 10px;
+        }
+      }
 
       .piece-status {
         width: 100px;
