@@ -89,7 +89,7 @@ html, body, #root, .main-container {
       height: 100px;
 
       position: relative;
-      .debug-quadrant {
+      .debug-octant {
         position: absolute;
         width: 5px;
         height: 5px;
@@ -97,35 +97,35 @@ html, body, #root, .main-container {
         border: 2px solid #8923b5;
         background-color: #ac42db;
 
-        &.debug-quadrant-0 {
+        &.debug-octant-0 {
           bottom: 10px;
           right: 20px;
         }
-        &.debug-quadrant-1 {
+        &.debug-octant-1 {
           bottom: 10px;
           left: 20px;
         }
-        &.debug-quadrant-2 {
+        &.debug-octant-2 {
           bottom: 20px;
           left: 10px;
         }
-        &.debug-quadrant-3 {
+        &.debug-octant-3 {
           top: 20px;
           left: 10px;
         }
-        &.debug-quadrant-4 {
+        &.debug-octant-4 {
           top: 10px;
           left: 20px;
         }
-        &.debug-quadrant-5 {
+        &.debug-octant-5 {
           top: 10px;
           right: 20px;
         }
-        &.debug-quadrant-6 {
+        &.debug-octant-6 {
           top: 20px;
           right: 10px;
         }
-        &.debug-quadrant-7 {
+        &.debug-octant-7 {
           bottom: 20px;
           right: 10px;
         }

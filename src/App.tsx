@@ -469,10 +469,10 @@ interface IPieceHolder {
   y: number
 }
 
-interface IQuadrant {
-  x: number;
-  y: number;
-  quad: number;
+interface IOctant {
+  x: number
+  y: number
+  octa: number
 }
 
 class Map {
@@ -562,20 +562,20 @@ class Map {
     }
   }
 
-  getCastlePoints(firstX: number, firstY: number, octaquadrant: number) {
-    const first: IQuadrant = {
+  getCastlePoints(firstX: number, firstY: number, octant: number) {
+    const first: IOctant = {
       x: firstX,
       y: firstY,
-      quad: octaquadrant,
+      octa: octant,
     }
 
-    let visited: IQuadrant[] = [first];
+    let visited: IOctant[] = [first];
 
-    const pushToVisited = (quad: IQuadrant) => {
-      if (!visited.some((extQ) => {
-        return extQ.x === quad.x && extQ.y === quad.y && extQ.quad === quad.quad
+    const pushToVisited = (octa: IOctant) => {
+      if (!visited.some((existing) => {
+        return existing.x === octa.x && existing.y === octa.y && existing.octa === octa.octa
       })) {
-        visited.push(quad)
+        visited.push(octa)
       }
     }
 
@@ -586,37 +586,33 @@ class Map {
       }
 
       const thisPiece = this.getAt(current.x, current.y).piece
-      const castleIndex = thisPiece.sideConnections[current.quad]
+      const octaIndex = thisPiece.sideConnections[current.octa]
 
-      for (let i = 0; i < thisPiece.sideConnections.length; i++) {
-        if (thisPiece.sideConnections[i] === castleIndex) {
-          const newQuadrant: IQuadrant = {
+      for (let i = 0; i < 8; i++) {
+        if (thisPiece.sideConnections[i] === octaIndex) {
+          const newOctant: IOctant = {
             x: current.x,
             y: current.y,
-            quad: i,
+            octa: i,
           }
-          pushToVisited(newQuadrant)
+          pushToVisited(newOctant)
         }
       }
 
-      const quadToOpposite: { [key: number]: number } = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
-      const newQuad = quadToOpposite[current.quad]
+      const octaToOpposite: { [key: number]: number } = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
+      const newOcta = octaToOpposite[current.octa]
 
-      if ((Math.floor(current.quad / 2) === 0) && (this.getAt(current.x, current.y + 1))) {
-        const bottomQuad: IQuadrant = {x: current.x, y: current.y + 1, quad: newQuad}
-        pushToVisited(bottomQuad)
+      if ((Math.floor(current.octa / 2) === 0) && (this.getAt(current.x, current.y + 1))) {
+        pushToVisited({x: current.x, y: current.y + 1, octa: newOcta})
       }
-      if ((Math.floor(current.quad / 2) === 1) && (this.getAt(current.x - 1, current.y))) {
-        const leftQuad: IQuadrant = {x: current.x - 1, y: current.y, quad: newQuad}
-        pushToVisited(leftQuad)
+      if ((Math.floor(current.octa / 2) === 1) && (this.getAt(current.x - 1, current.y))) {
+        pushToVisited({x: current.x - 1, y: current.y, octa: newOcta})
       }
-      if ((Math.floor(current.quad / 2) === 2) && (this.getAt(current.x, current.y - 1))) {
-        const topQuad: IQuadrant = {x: current.x, y: current.y - 1, quad: newQuad}
-        pushToVisited(topQuad)
+      if ((Math.floor(current.octa / 2) === 2) && (this.getAt(current.x, current.y - 1))) {
+        pushToVisited({x: current.x, y: current.y - 1, octa: newOcta})
       }
-      if ((Math.floor(current.quad / 2) === 3) && (this.getAt(current.x + 1, current.y))) {
-        const rightQuad: IQuadrant = {x: current.x + 1, y: current.y, quad: newQuad}
-        pushToVisited(rightQuad)
+      if ((Math.floor(current.octa / 2) === 3) && (this.getAt(current.x + 1, current.y))) {
+        pushToVisited({x: current.x + 1, y: current.y, octa: newOcta})
       }
     }
 
@@ -639,7 +635,7 @@ const MapDisplay = (
     placeablePiece
   }: IMapDisplayProps
 ) => {
-  const [debugQuadrants, setDebugQuadrants] = React.useState<IQuadrant[]>([])
+  const [debugOctants, setDebugOctants] = React.useState<IOctant[]>([])
 
   const mapRange = React.useMemo(() => map.getRange(), [map])
 
@@ -676,49 +672,55 @@ const MapDisplay = (
                 <img
                   src={pieceHolder.piece.getImageDataUrl()}
                   onClick={(event) => {
-                    const clickY = event.clientY - (event.target as HTMLImageElement).getBoundingClientRect().top
-                    const clickX = event.clientX - (event.target as HTMLImageElement).getBoundingClientRect().left
+                    const clickY = (
+                      (event.clientY - (event.target as HTMLImageElement).getBoundingClientRect().top) *
+                      (100 / (zoomLevel || 100))
+                    )
+                    const clickX = (
+                      (event.clientX - (event.target as HTMLImageElement).getBoundingClientRect().left) *
+                      (100 / (zoomLevel || 100))
+                    )
 
-                    let octaquadrant = 0
+                    let octant = 0
 
                     if (clickY < 50) {
                       if (clickX < 50) {
                         if (clickX < clickY) {
-                          octaquadrant = 3
+                          octant = 3
                         } else {
-                          octaquadrant = 4
+                          octant = 4
                         }
                       } else {
                         if (clickX + clickY < 100) {
-                          octaquadrant = 5
+                          octant = 5
                         } else {
-                          octaquadrant = 6
+                          octant = 6
                         }
                       }
                     } else {
                       if (clickX < 50) {
                         if (clickX + clickY < 100) {
-                          octaquadrant = 2
+                          octant = 2
                         } else {
-                          octaquadrant = 1
+                          octant = 1
                         }
                       } else {
                         if (clickX < clickY) {
-                          octaquadrant = 0
+                          octant = 0
                         } else {
-                          octaquadrant = 7
+                          octant = 7
                         }
                       }
                     }
 
-                    const quadrants = map.getCastlePoints(x, y, octaquadrant)
-                    setDebugQuadrants(quadrants)
+                    const octants = map.getCastlePoints(x, y, octant)
+                    setDebugOctants(octants)
                   }}
                 />
-                {debugQuadrants.filter(q => q.x === x && q.y === y).map(q => {
+                {debugOctants.filter(q => q.x === x && q.y === y).map(q => {
                   return <span
-                    className={'debug-quadrant debug-quadrant-' + q.quad}
-                    key={q.quad}
+                    className={'debug-octant debug-octant-' + q.octa}
+                    key={q.octa}
                   ></span>
                 })}
               </>
