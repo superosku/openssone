@@ -11,24 +11,71 @@ html, body, #root, .main-container {
     position: absolute;
     top: 10px;
     right: 10px;
-    display: flex;
-    flex-direction: column;
 
-    background-color: #6d5627;
+    $menuBg: #899599;
+    background-color: $menuBg;
 
-    span {
-      padding: 10px;
-      color: #dbdbdb;
-      font-weight: bold;
+    &.closed {
+      height: 30px;
+      width: 30px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid white;
       cursor: pointer;
 
       &:hover {
-        background-color: #4e3d1b;
+        color: white;
+        background-color: white;
+        border-color: $menuBg;
+        svg {
+          color: $menuBg;
+        }
       }
 
-      &.logo {
-        font-size: 24px;
+      svg {
+        height: 30px;
+        color: white;
       }
+    }
+
+    &.open {
+      display: flex;
+      flex-direction: column;
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+      border-top-right-radius: 15px;
+
+      span {
+        padding: 10px 30px 10px 10px;
+        border-bottom: 1px solid white;
+        cursor: pointer;
+
+        &:hover {
+          color: mix(white, $menuBg);
+        }
+
+        &:last-child {
+          border: 0;
+        }
+      }
+
+      .times {
+        position: absolute;
+        top: 3px;
+        right: 8px;
+        cursor: pointer;
+
+        height: 30px;
+        color: white;
+
+        &:hover {
+          color: mix(white, $menuBg);
+        }
+      }
+
     }
   }
 }

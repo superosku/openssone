@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.scss';
-import {FaCheck} from 'react-icons/fa';
+import {FaCheck, FaBars, FaTimes} from 'react-icons/fa';
 
 const range = (min: number, max: number) => {
   return [...Array(max - min + 1).keys()].map(i => i + min)
@@ -823,6 +823,7 @@ const App = () => {
   const [map, setMap] = React.useState(new Map())
   const [showDebug, setShowDebug] = React.useState(false)
   const [zoomLevel, setZoomLevel] = React.useState<undefined | number>(undefined)
+  const [menuOpen, setMenuOpen] = React.useState(false)
 
   React.useEffect(() => {
     let newMap = map.clone()
@@ -832,23 +833,25 @@ const App = () => {
 
   return (
     <div className={'main-container'}>
-      <div className={'menu'}>
-        <span className={'logo'}>Openssone</span>
-        <span onClick={() => {
-          setShowDebug(!showDebug)
-        }}>Toggle debug</span>
-        <span onClick={() => {
-          setZoomLevel(undefined)
-        }}>100%</span>
-        <span onClick={() => {
-          setZoomLevel(75)
-        }}>75%</span>
-        <span onClick={() => {
-          setZoomLevel(50)
-        }}>50%</span>
-        <span onClick={() => {
-          setZoomLevel(25)
-        }}>25%</span>
+      <div className={'menu' + (menuOpen ? ' open' : ' closed')}>
+        {menuOpen ? <>
+          <FaTimes className={'times'} onClick={() => {setMenuOpen(!menuOpen)}} />
+          <span onClick={() => {
+            setShowDebug(!showDebug)
+          }}>Toggle debug</span>
+          <span onClick={() => {
+            setZoomLevel(undefined)
+          }}>100%</span>
+          <span onClick={() => {
+            setZoomLevel(75)
+          }}>75%</span>
+          <span onClick={() => {
+            setZoomLevel(50)
+          }}>50%</span>
+          <span onClick={() => {
+            setZoomLevel(25)
+          }}>25%</span>
+        </> : <FaBars className={'bars'} onClick={() => {setMenuOpen(!menuOpen)}}/>}
       </div>
       {!showDebug && <Game zoomLevel={zoomLevel}/>}
       {showDebug &&
