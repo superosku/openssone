@@ -37,8 +37,39 @@
 /*  }*/
 /*}*/
 
-img {
-  //padding: 2px;
+html, body, #root, .main-container {
+  height: 100%;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: row;
+
+  .menu {
+    z-index: 10;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+
+    background-color: #6d5627;
+
+    span {
+      padding: 10px;
+      color: #dbdbdb;
+      font-weight: bold;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #4e3d1b;
+      }
+
+      &.logo {
+        font-size: 24px;
+      }
+    }
+  }
 }
 
 .outer {
@@ -56,7 +87,32 @@ img {
 
 .map-display {
   display: inline-block;
-  border: 1px solid black;
+
+  @each $size in 75, 50, 25 {
+    &.zoom-out.zoom-out-#{$size} table {
+      td {
+        width: 100px * ($size / 100);
+        height: 100px * ($size / 100);
+
+        img {
+          width: 100px * ($size / 100);
+          height: 100px * ($size / 100);
+        }
+
+        .piece-status {
+          width: 100px * ($size / 100);
+          height: 100px * ($size / 100);
+
+          svg {
+            height: 30px * ($size / 100);
+            width: 30px * ($size / 100);
+            padding: 10px * ($size / 100);
+            border-radius: 10px * ($size / 100);
+          }
+        }
+      }
+    }
+  }
 
   table {
     border-collapse: collapse;
@@ -71,10 +127,116 @@ img {
       padding: 0;
       //height: 104px;
       //width: 104px;
-    }
-    tr {
+      width: 100px;
+      height: 100px;
       //border: 1px solid black;
+      //border: 1px solid lightgrey;
+
+      .piece-status {
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+          height: 30px;
+          width: 30px;
+          border: 1px solid black;
+          padding: 10px;
+          border-radius: 10px;
+        }
+
+        &.ok svg {
+          color: green;
+          border-color: green;
+
+          &:hover {
+            color: white;
+            background-color: green;
+          }
+        }
+
+        &.ok-rotated svg {
+          color: orange;
+          border-color: orange;
+
+          &:hover {
+            color: white;
+            background-color: orange;
+          }
+        }
+
+        &:hover {
+          &.ok-rotated svg {
+            color: white;
+            background-color: orange;
+          }
+
+          &.ok svg {
+            color: white;
+            background-color: green;
+          }
+        }
+      }
+    }
+
+    tr {
       padding: 0;
+    }
+  }
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+
+  .map-container {
+    background-color: #e3e3e3;
+    //position: absolute;
+    //top: 0;
+    //left: 0;
+    //right: 0;
+    //bottom: 113px;
+
+    flex-grow: 1;
+    overflow: scroll;
+    //display: flex;
+    //align-items: center;
+    //justify-content: center;
+    .map-display {
+
+    }
+  }
+
+  .rotation-choices {
+    //position: absolute;
+    //bottom: 0;
+    //left: 0;
+    //right: 0;
+    height: 110px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    //border-top: 1px solid black;
+    background-color: #c49b48;
+
+    div {
+      padding: 5px;
+
+      &.active {
+        background-color: #7a612d;
+        //border: 1px solid black;
+      }
+
+      img {
+        display: inline-block;
+        //border: 1px solid white;
+
+      }
     }
   }
 }

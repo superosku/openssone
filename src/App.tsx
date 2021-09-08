@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.scss';
+import {FaCheck} from 'react-icons/fa';
 
 const range = (min: number, max: number) => {
   return [...Array(max - min + 1).keys()].map(i => i + min)
@@ -133,10 +134,15 @@ class Piece {
             ctx.stroke();
           } else {
             // Regular stuff
-
-            // TODO: Handle going into castles correctly (do not draw inside castles)
+            let dist = 0
+            if (this.extraInfo === PieceExtraInfo.oppositeCastleFull) {
+              dist = 22
+            }
+            if (this.sideTypes[(i + 2) % 4] === PieceSideType.castle) {
+              dist = -13
+            }
             ctx.beginPath();
-            ctx.moveTo(0, 0);
+            ctx.moveTo(0, dist);
             ctx.lineTo(0, 50);
             ctx.stroke();
           }
@@ -144,7 +150,6 @@ class Piece {
 
         // Draw villages and river endings
         const roadOrRiverCount = this.sideTypes.reduce((a: number, s) => a + (s === sideType ? 1 : 0), 0)
-
         if (roadOrRiverCount === 1 && sideType === PieceSideType.river) {
           ctx.strokeStyle = colorWater
           ctx.fillStyle = colorWater
@@ -156,9 +161,10 @@ class Piece {
         }
         if (
           roadOrRiverCount !== 2 &&
-          sideType === PieceSideType.road
+          sideType === PieceSideType.road &&
+          !(this.extraInfo === PieceExtraInfo.oppositeCastleFull) &&
+          !(this.sideTypes[(i + 2) % 4] === PieceSideType.castle)
         ) {
-          // TODO: Do not draw this inside castles
           ctx.strokeStyle = colorRoad
           ctx.fillStyle = colorRoad
 
@@ -190,8 +196,8 @@ class Piece {
           // Handle 3 sided castle
           ctx.beginPath();
           ctx.moveTo(50, -50);
-          ctx.lineTo(-25, -25);
-          ctx.lineTo(-25, 25);
+          ctx.lineTo(-15, -25);
+          ctx.lineTo(-15, 25);
           ctx.lineTo(50, 50);
           ctx.lineTo(-50, 50);
           ctx.lineTo(-50, -50);
@@ -199,8 +205,8 @@ class Piece {
 
           ctx.beginPath();
           ctx.moveTo(50, -50);
-          ctx.lineTo(-25, -25);
-          ctx.lineTo(-25, 25);
+          ctx.lineTo(-15, -25);
+          ctx.lineTo(-15, 25);
           ctx.lineTo(50, 50);
           ctx.stroke()
         } else if (
@@ -221,7 +227,6 @@ class Piece {
           ctx.stroke();
         } else {
           // Handle single castle
-
           if (
             this.sideTypes[(i + 2) % 4] === PieceSideType.castle &&
             this.extraInfo === PieceExtraInfo.oppositeCastleFull
@@ -258,7 +263,7 @@ class Piece {
             // Regular 1 sided castle
             ctx.lineWidth = 5;
             ctx.beginPath();
-            ctx.arc(0, 105, 75, 0, 2 * Math.PI);
+            ctx.arc(0, 85, 60, 0, 2 * Math.PI);
             ctx.fill();
             ctx.stroke();
           }
@@ -475,8 +480,22 @@ class Map {
 
   constructor() {
     this.pieceHolders = []
+  }
 
-    for (let x = 0; x < 20; x++) {
+  clone() {
+    let newMap = new Map()
+    newMap.pieceHolders = this.pieceHolders.map(holder => {
+      return {...holder}
+    })
+    return newMap
+  }
+
+  setPiece(x: number, y: number, piece: Piece) {
+    this.pieceHolders.push({x, y, piece})
+  }
+
+  randomize() {
+    for (let x = 0; x < 10; x++) {
       for (let y = 0; y < 10; y++) {
         for (let i = 0; i < 1000; i++) {
           const randomPiece = allRotatedPieces[Math.floor(Math.random() * allRotatedPieces.length)]
@@ -496,15 +515,25 @@ class Map {
   }
 
   pieceOkHere(x: number, y: number, piece: Piece) {
+    const isFirstPiece = this.pieceHolders.length === 0
+
+    if (this.getAt(x, y) && !isFirstPiece) {
+      return false
+    }
+
     const left = this.getAt(x - 1, y)
     const right = this.getAt(x + 1, y)
     const top = this.getAt(x, y - 1)
     const bottom = this.getAt(x, y + 1)
 
+    if (!left && !right && !top && !bottom && !isFirstPiece) {
+      return false
+    }
+
     if (left && left.piece.getRight() !== piece.getLeft()) {
       return false
     }
-    if (right && right.piece.getLeft() !== piece.getLeft()) {
+    if (right && right.piece.getLeft() !== piece.getRight()) {
       return false
     }
     if (bottom && bottom.piece.getTop() !== piece.getBottom()) {
@@ -518,6 +547,9 @@ class Map {
   }
 
   getRange() {
+    if (this.pieceHolders.length === 0) {
+      return {x: {min: 0, max: 0}, y: {min: 0, max: 0}}
+    }
     return {
       x: {
         min: Math.min(...this.pieceHolders.map(p => p.x)),
@@ -584,27 +616,71 @@ class Map {
         pushToVisited(rightQuad)
       }
     }
+
+    return visited
   }
 }
 
-const MapDisplay = ({map}: { map: Map }) => {
-  const mapRange = React.useMemo(() => map.getRange(), [])
+interface IMapDisplayProps {
+  map: Map
+  zoomLevel?: number,
+  onClickMap?: (x: number, y: number) => void
+  placeablePiece?: Piece
+}
 
-  return <div className={'map-display'}>
+interface IQuadrant {
+  x: number
+  y: number
+  quadrant: number
+}
+
+const MapDisplay = (
+  {
+    map,
+    zoomLevel,
+    onClickMap,
+    placeablePiece
+  }: IMapDisplayProps
+) => {
+  const [debugQuadrants, setDebugQuadrants] = React.useState<IQuadrant[]>([])
+  const [loading, setloading] = React.useState<boolean>(true)
+
+  const mapRange = React.useMemo(() => map.getRange(), [map])
+
+  return <div className={'map-display' + (zoomLevel ? (' zoom-out ' + 'zoom-out-' + zoomLevel) : '')}>
     <table>
-      {range(mapRange.y.min, mapRange.y.max).map(y => {
-        return <tr>
-          {range(mapRange.x.min, mapRange.x.max).map(x => {
-            const piece = map.getAt(x, y)
-            if (!piece) {
-              return <td></td>
+      <tbody>
+      {range(mapRange.y.min - 1, mapRange.y.max + 1).map(y => {
+        return <tr key={y}>
+          {range(mapRange.x.min - 1, mapRange.x.max + 1).map(x => {
+            const pieceHolder = map.getAt(x, y)
+
+            let pieceStatusClass = ''
+            if (placeablePiece) {
+              if (map.pieceOkHere(x, y, placeablePiece)) {
+                pieceStatusClass = 'ok'
+              } else {
+                if ([1, 2, 3].some((i) =>
+                  map.pieceOkHere(x, y, placeablePiece.getRotated(i))
+                )) {
+                  pieceStatusClass = 'ok-rotated'
+                }
+              }
             }
-            return <td>
-              <img
-                src={piece.piece.getImageDataUrl()}
+
+            return <td
+              key={x}
+              onClick={() => {
+                if (onClickMap) {
+                  onClickMap(x, y)
+                }
+              }}
+            >
+              {pieceHolder && <img
+                src={pieceHolder.piece.getImageDataUrl()}
                 onClick={(event) => {
-                  const clickX = event.pageX - (piece.x * 100) 
-                  const clickY = event.pageY - (piece.y * 100)
+                  const clickY = event.clientY - (event.target as HTMLImageElement).getBoundingClientRect().top
+                  const clickX = event.clientX - (event.target as HTMLImageElement).getBoundingClientRect().left
 
                   let octaquadrant = 0
 
@@ -637,32 +713,137 @@ const MapDisplay = ({map}: { map: Map }) => {
                       }
                     }
                   }
-                  map.getCastlePoints(piece.x, piece.y, octaquadrant)
+
+                  const quadrants = map.getCastlePoints(x, y, octaquadrant)
                 }}
-              />
+              />}
+              {pieceStatusClass && <div className={'piece-status ' + pieceStatusClass}>
+                <FaCheck/>
+              </div>}
             </td>
           })}
         </tr>
       })}
+      </tbody>
     </table>
+  </div>
+}
+
+const getRandomPiece = () => {
+  return pieces[Math.floor(Math.random() * pieces.length)]
+}
+
+interface IGameProps {
+  zoomLevel: number | undefined
+}
+
+const Game = ({zoomLevel}: IGameProps) => {
+  const [map, setMap] = React.useState(new Map())
+  const [nextPiece, setNextPiece] = React.useState(getRandomPiece())
+  const [nextPieceRotation, setNextPieceRotation] = React.useState(0)
+
+  React.useEffect(() => {
+    let newMap = map.clone()
+    newMap.setPiece(0, 0, pieces[0])
+    setMap(newMap)
+  }, [])
+
+  return <div className={'game'}>
+    <div className={'map-container'}>
+      <MapDisplay
+        zoomLevel={zoomLevel}
+        placeablePiece={nextPiece.getRotated(nextPieceRotation)}
+        map={map}
+        onClickMap={(x, y) => {
+          let rotatedPiece = nextPiece.getRotated(nextPieceRotation)
+          let wasOk = false
+          if (!map.pieceOkHere(x, y, rotatedPiece)) {
+            for (let i = 0; i < 3; i++) {
+              rotatedPiece = rotatedPiece.getRotated(1)
+              if (map.pieceOkHere(x, y, rotatedPiece)) {
+                wasOk = true
+                break
+              }
+            }
+          } else {
+            wasOk = true
+          }
+          if (!wasOk) {
+            return
+          }
+          let newMap = map.clone()
+          newMap.setPiece(x, y, rotatedPiece)
+          setMap(newMap)
+          setNextPiece(getRandomPiece)
+        }}
+      />
+    </div>
+    <div className={'rotation-choices'}>
+      {[0, 1, 2, 3].map(rotationChoice => {
+        return <div
+          className={nextPieceRotation === rotationChoice ? 'active' : ''}
+        >
+          <img
+            key={rotationChoice}
+            onClick={() => {
+              setNextPieceRotation(rotationChoice)
+            }}
+            src={nextPiece.getRotated(rotationChoice).getImageDataUrl()}
+          />
+        </div>
+      })}
+    </div>
   </div>
 }
 
 const App = () => {
   const [map, setMap] = React.useState(new Map())
+  const [showDebug, setShowDebug] = React.useState(false)
+  const [zoomLevel, setZoomLevel] = React.useState<undefined | number>(undefined)
+
+  React.useEffect(() => {
+    let newMap = map.clone()
+    newMap.randomize()
+    setMap(newMap)
+  }, [])
 
   return (
-    <div>
-      <MapDisplay map={map}/>
-      <div className="outer">
-        {pieces.map(piece => {
-          return <div className={"inner"}>
-            {[0, 1, 2, 3].map(rotation => {
-              return <img src={piece.getRotated(rotation).getImageDataUrl()}/>
-            })}
-          </div>
-        })}
+    <div className={'main-container'}>
+      <div className={'menu'}>
+        <span className={'logo'}>Openssone</span>
+        <span onClick={() => {
+          setShowDebug(!showDebug)
+        }}>Toggle debug</span>
+        <span onClick={() => {
+          setZoomLevel(undefined)
+        }}>100%</span>
+        <span onClick={() => {
+          setZoomLevel(75)
+        }}>75%</span>
+        <span onClick={() => {
+          setZoomLevel(50)
+        }}>50%</span>
+        <span onClick={() => {
+          setZoomLevel(25)
+        }}>25%</span>
       </div>
+      {!showDebug && <Game zoomLevel={zoomLevel}/>}
+      {showDebug &&
+      <div>
+        <h1>Generated map</h1>
+        <MapDisplay map={map}/>
+        <h1>All pieces</h1>
+        <div className="outer">
+          {pieces.map(piece => {
+            return <div className={"inner"} key={piece.getHash()}>
+              {[0, 1, 2, 3].map(rotation => {
+                return <img key={rotation} src={piece.getRotated(rotation).getImageDataUrl()}/>
+              })}
+            </div>
+          })}
+        </div>
+      </div>
+      }
     </div>
   );
 }
