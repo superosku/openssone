@@ -36,15 +36,18 @@ class Piece {
   sideTypes: [PieceSideType, PieceSideType, PieceSideType, PieceSideType];
   extraInfo: PieceExtraInfo
   sideConnections: [number, number, number, number, number, number, number, number];
+  roadConnections: [number, number, number, number];
 
   constructor(
     sideTypes: [PieceSideType, PieceSideType, PieceSideType, PieceSideType],
     extraInfo: PieceExtraInfo = PieceExtraInfo.empty,
     sideConnections: [number, number, number, number, number, number, number, number] = [1, 2, 3, 4, 5, 6, 7, 8],
+    roadConnections: [number, number, number, number] = [0, 0, 0, 0]
   ) {
     this.sideTypes = sideTypes
     this.extraInfo = extraInfo
     this.sideConnections = sideConnections
+    this.roadConnections = roadConnections
   }
 
   getBottom() {
@@ -310,7 +313,6 @@ class Piece {
         this.sideTypes[(3 + rotation) % 4],
       ],
       this.extraInfo,
-      // Fix SideConnection rotations
       [
         this.sideConnections[(0 + (rotation * 2)) % 8],
         this.sideConnections[(1 + (rotation * 2)) % 8],
@@ -320,6 +322,12 @@ class Piece {
         this.sideConnections[(5 + (rotation * 2)) % 8],
         this.sideConnections[(6 + (rotation * 2)) % 8],
         this.sideConnections[(7 + (rotation * 2)) % 8],
+      ],
+      [
+        this.roadConnections[(0 + rotation) % 4],
+        this.roadConnections[(1 + rotation) % 4],
+        this.roadConnections[(2 + rotation) % 4],
+        this.roadConnections[(3 + rotation) % 4],
       ]
     )
   }
@@ -338,32 +346,38 @@ const pieces = [
   new Piece(
     [PieceSideType.road, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     undefined,
-    [1, 1, 1, 1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0]
   ),
   new Piece(
     [PieceSideType.road, PieceSideType.road, PieceSideType.empty, PieceSideType.empty,],
     undefined,
-    [1, 2, 2, 1, 1, 1, 1, 1]
+    [1, 2, 2, 1, 1, 1, 1, 1],
+    [1, 1, 0, 0]
   ),
   new Piece(
     [PieceSideType.road, PieceSideType.empty, PieceSideType.road, PieceSideType.empty,],
     undefined,
-    [1, 2, 2, 2, 2, 1, 1, 1]
+    [1, 2, 2, 2, 2, 1, 1, 1],
+    [1, 0, 1, 0]
   ),
   new Piece(
     [PieceSideType.empty, PieceSideType.road, PieceSideType.road, PieceSideType.road,],
     undefined,
-    [1, 1, 1, 2, 2, 3, 3, 1]
+    [1, 1, 1, 2, 2, 3, 3, 1],
+    [0, 1, 2, 3]
   ),
   new Piece(
     [PieceSideType.road, PieceSideType.road, PieceSideType.road, PieceSideType.road,],
     undefined,
-    [1, 2, 2, 3, 3, 4, 4, 1]
+    [1, 2, 2, 3, 3, 4, 4, 1],
+    [1, 2, 3, 4]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.road, PieceSideType.road, PieceSideType.castle,],
     undefined,
-    [1, 1, 2, 3, 3, 2, 1, 1]
+    [1, 1, 2, 3, 3, 2, 1, 1],
+    [0, 1, 1, 0]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.empty, PieceSideType.empty, PieceSideType.castle,],
@@ -373,12 +387,14 @@ const pieces = [
   new Piece(
     [PieceSideType.empty, PieceSideType.road, PieceSideType.castle, PieceSideType.road,],
     undefined,
-    [1, 1, 1, 2, 3, 3, 2, 1]
+    [1, 1, 1, 2, 3, 3, 2, 1],
+    [0, 1, 0, 1]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.road, PieceSideType.castle, PieceSideType.empty,],
     undefined,
-    [1, 1, 2, 2, 3, 3, 2, 2]
+    [1, 1, 2, 2, 3, 3, 2, 2],
+    [0, 1, 0, 0]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.empty, PieceSideType.castle, PieceSideType.empty,],
@@ -388,12 +404,14 @@ const pieces = [
   new Piece(
     [PieceSideType.castle, PieceSideType.road, PieceSideType.castle, PieceSideType.empty,],
     PieceExtraInfo.oppositeCastleFull,
-    [1, 1, 2, 3, 1, 1, 4, 4]
+    [1, 1, 2, 3, 1, 1, 4, 4],
+    [0, 1, 0, 0]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.castle, PieceSideType.castle, PieceSideType.road,],
     undefined,
-    [1, 1, 1, 1, 1, 1, 2, 3]
+    [1, 1, 1, 1, 1, 1, 2, 3],
+    [0, 0, 0, 1]
   ),
   new Piece(
     [PieceSideType.castle, PieceSideType.castle, PieceSideType.castle, PieceSideType.empty,],
@@ -408,7 +426,8 @@ const pieces = [
   new Piece(
     [PieceSideType.castle, PieceSideType.road, PieceSideType.road, PieceSideType.empty,],
     PieceExtraInfo.monastery,
-    [1, 1, 2, 3, 3, 2, 2, 2]
+    [1, 1, 2, 3, 3, 2, 2, 2],
+    [0, 1, 2, 0]
   ),
   new Piece(
     [PieceSideType.empty, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
@@ -418,7 +437,8 @@ const pieces = [
   new Piece(
     [PieceSideType.road, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     PieceExtraInfo.monastery,
-    [1, 1, 1, 1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
@@ -438,22 +458,26 @@ const pieces = [
   new Piece(
     [PieceSideType.river, PieceSideType.empty, PieceSideType.river, PieceSideType.road,],
     PieceExtraInfo.monastery,
-    [1, 2, 2, 2, 2, 3, 3, 1]
+    [1, 2, 2, 2, 2, 3, 3, 1],
+    [0, 0, 0, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.empty, PieceSideType.river, PieceSideType.road,],
     undefined,
-    [1, 2, 2, 2, 2, 3, 3, 1]
+    [1, 2, 2, 2, 2, 3, 3, 1],
+    [0, 0, 0, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.river, PieceSideType.road, PieceSideType.road,],
     undefined,
-    [1, 2, 2, 1, 1, 3, 3, 1]
+    [1, 2, 2, 1, 1, 3, 3, 1],
+    [0, 0, 1, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.castle, PieceSideType.river, PieceSideType.road,],
     undefined,
-    [1, 2, 3, 3, 2, 4, 4, 1]
+    [1, 2, 3, 3, 5, 4, 4, 1],
+    [0, 0, 0, 1]
   ),
   new Piece(
     [PieceSideType.river, PieceSideType.river, PieceSideType.castle, PieceSideType.castle,],
@@ -482,6 +506,12 @@ interface IOctant {
   x: number
   y: number
   octa: number
+}
+
+interface IQuadrant {
+  x: number
+  y: number
+  road: number
 }
 
 class Map {
@@ -633,6 +663,65 @@ class Map {
 
     return visited
   }
+
+  getRoadPoints(firstX: number, firstY: number, firstRoad: number) {
+    const first: IQuadrant = {
+      x: firstX,
+      y: firstY,
+      road: firstRoad,
+    }
+
+    let visited: IQuadrant[] = [first];
+
+    const pushToVisited = (thisRoad: IQuadrant) => {
+      if (!visited.some((existing) => {
+        return existing.x === thisRoad.x && existing.y === thisRoad.y && existing.road === thisRoad.road
+      })) {
+        visited.push(thisRoad)
+      }
+    }
+
+    for (let index = 0; index < visited.length; index++) {
+      let current = visited[index]
+      if (!current) {
+        break
+      }
+      const thisPiece = this.getAt(current.x, current.y).piece
+      const roadIndex = thisPiece.roadConnections[current.road]
+
+      if (roadIndex === 0) {
+        return
+      }
+
+      for (let i = 0; i < thisPiece.roadConnections.length; i++) {
+        if (thisPiece.roadConnections[i] === roadIndex) {
+          const newRoad: IQuadrant = {
+            x: current.x,
+            y: current.y,
+            road: i,
+          }
+          pushToVisited(newRoad)
+        }
+      }
+      const roadOpposites: { [key: number]: number } = {0: 2, 1: 3, 2: 0, 3: 1}
+      const newRoad = roadOpposites[current.road]
+
+      if ((current.road === 0) && (this.getAt(current.x, current.y + 1))) {
+        pushToVisited({x: current.x, y: current.y + 1, road: newRoad})
+      }
+      if ((current.road === 1) && (this.getAt(current.x - 1, current.y))) {
+        pushToVisited({x: current.x - 1, y: current.y, road: newRoad})
+      }
+      if ((current.road === 2) && (this.getAt(current.x, current.y - 1))) {
+        pushToVisited({x: current.x, y: current.y - 1, road: newRoad})
+      }
+      if ((current.road === 3) && (this.getAt(current.x + 1, current.y))) {
+        pushToVisited({x: current.x + 1, y: current.y, road: newRoad})
+      }
+    }
+    return visited
+  }
+
 }
 
 interface IMapDisplayProps {
@@ -651,6 +740,7 @@ const MapDisplay = (
   }: IMapDisplayProps
 ) => {
   const [debugOctants, setDebugOctants] = React.useState<IOctant[]>([])
+  const [debugRoads, setDebugRoads] = React.useState<IQuadrant[]>([])
 
   const mapRange = React.useMemo(() => map.getRange(), [map])
 
@@ -696,6 +786,33 @@ const MapDisplay = (
                       (100 / (zoomLevel || 100))
                     )
 
+                    // Road Click
+                    let clickedRoadQuadrant
+
+                    if (clickX >= 45 && clickX <= 55) {
+                      if (clickY < 50) {
+                        clickedRoadQuadrant = 2
+                      } else {
+                        clickedRoadQuadrant = 0
+                      }
+                    } if (clickY >= 45 && clickY <= 55) {
+                      if (clickX < 50) {
+                        clickedRoadQuadrant = 1
+                      } else {
+                        clickedRoadQuadrant = 3
+                      }
+                    }
+
+                    if (clickedRoadQuadrant !== undefined) {
+                      const roads = map.getRoadPoints(x, y, clickedRoadQuadrant)
+                      if (roads) {
+                        setDebugRoads(roads)
+                        setDebugOctants([])
+                        return
+                      }
+                    }
+
+                    // Octant Click
                     let octant = 0
 
                     if (clickY < 50) {
@@ -730,12 +847,20 @@ const MapDisplay = (
 
                     const octants = map.getCastlePoints(x, y, octant)
                     setDebugOctants(octants)
-                  }}
+                    setDebugRoads([])
+                  }
+                  }
                 />
                 {debugOctants.filter(q => q.x === x && q.y === y).map(q => {
                   return <span
                     className={'debug-octant debug-octant-' + q.octa}
                     key={q.octa}
+                  ></span>
+                })}
+                {debugRoads.filter(q => q.x === x && q.y === y).map(q => {
+                  return <span
+                    className={'debug-road debug-road-' + q.road}
+                    key={q.road}
                   ></span>
                 })}
               </>
