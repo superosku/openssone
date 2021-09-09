@@ -508,7 +508,7 @@ interface IOctant {
   octa: number
 }
 
-interface IRoad {
+interface IQuadrant {
   x: number
   y: number
   road: number
@@ -665,15 +665,15 @@ class Map {
   }
 
   getRoadPoints(firstX: number, firstY: number, firstRoad: number) {
-    const first: IRoad = {
+    const first: IQuadrant = {
       x: firstX,
       y: firstY,
       road: firstRoad,
     }
 
-    let visited: IRoad[] = [first];
+    let visited: IQuadrant[] = [first];
 
-    const pushToVisited = (thisRoad: IRoad) => {
+    const pushToVisited = (thisRoad: IQuadrant) => {
       if (!visited.some((existing) => {
         return existing.x === thisRoad.x && existing.y === thisRoad.y && existing.road === thisRoad.road
       })) {
@@ -689,9 +689,13 @@ class Map {
       const thisPiece = this.getAt(current.x, current.y).piece
       const roadIndex = thisPiece.roadConnections[current.road]
 
+      if (roadIndex === 0) {
+        return
+      }
+
       for (let i = 0; i < thisPiece.roadConnections.length; i++) {
         if (thisPiece.roadConnections[i] === roadIndex) {
-          const newRoad: IRoad = {
+          const newRoad: IQuadrant = {
             x: current.x,
             y: current.y,
             road: i,
@@ -736,7 +740,7 @@ const MapDisplay = (
   }: IMapDisplayProps
 ) => {
   const [debugOctants, setDebugOctants] = React.useState<IOctant[]>([])
-  const [debugRoads, setDebugRoads] = React.useState<IRoad[]>([])
+  const [debugRoads, setDebugRoads] = React.useState<IQuadrant[]>([])
 
   const mapRange = React.useMemo(() => map.getRange(), [map])
 
@@ -783,26 +787,30 @@ const MapDisplay = (
                     )
 
                     // Road Click
-                    let road = -1
+                    let clickedRoadQuadrant
 
                     if (clickX >= 45 && clickX <= 55) {
                       if (clickY < 50) {
-                        road = 2
+                        clickedRoadQuadrant = 2
                       } else {
-                        road = 0
+                        clickedRoadQuadrant = 0
                       }
                     } if (clickY >= 45 && clickY <= 55) {
                       if (clickX < 50) {
-                        road = 1
+                        clickedRoadQuadrant = 1
                       } else {
-                        road = 3
+                        clickedRoadQuadrant = 3
                       }
                     }
 
-                    if (road !== -1) {
-                      const roads = map.getRoadPoints(x, y, road)
-                      setDebugRoads(roads)
-                    } else {
+                    if (clickedRoadQuadrant !== undefined) {
+                      const roads = map.getRoadPoints(x, y, clickedRoadQuadrant)
+                      if (roads) {
+                        setDebugRoads(roads)
+                        setDebugOctants([])
+                        return
+                      }
+                    }
 
                     // Octant Click
                     let octant = 0
@@ -839,8 +847,9 @@ const MapDisplay = (
 
                     const octants = map.getCastlePoints(x, y, octant)
                     setDebugOctants(octants)
+                    setDebugRoads([])
                   }
-                  }}
+                  }
                 />
                 {debugOctants.filter(q => q.x === x && q.y === y).map(q => {
                   return <span
