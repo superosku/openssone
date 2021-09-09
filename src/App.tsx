@@ -715,7 +715,6 @@ class Map {
         pushToVisited({x: current.x + 1, y: current.y, road: newRoad})
       }
     }
-    console.log(visited)
     return visited
   }
 
