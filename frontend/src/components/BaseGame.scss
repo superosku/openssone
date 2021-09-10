@@ -1,0 +1,46 @@
+.game {
+  .map-container {
+    background-color: #e3e3e3;
+
+    flex-grow: 1;
+    overflow: scroll;
+  }
+
+  .bottom-menu {
+    position: relative;
+
+    height: 110px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    background-color: #c49b48;
+
+    .buttons {
+      top: 0;
+      left: 0;
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      //flex-grow: 1;
+    }
+
+    .rotation-choices {
+      display: flex;
+      flex-direction: row;
+      //flex-grow: 1;
+
+      div {
+        padding: 5px;
+
+        &.active {
+          background-color: #7a612d;
+        }
+
+        img {
+          display: inline-block;
+        }
+      }
+    }
+  }
+}

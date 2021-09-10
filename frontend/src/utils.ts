@@ -1,5 +1,6 @@
 import {Piece, PieceExtraInfo, PieceSideType} from "./game/Piece";
 import axios from "axios";
+import {pieces} from "./game/defaultPieces";
 
 export const axiosInstance = axios.create({
   baseURL: 'http://localhost:8888',
@@ -259,4 +260,8 @@ export const getImageDataUrl = (piece: Piece) => {
   const dataUrl = canvas.toDataURL("image/png");
   pieceImageCache[piece.getHash()] = dataUrl
   return dataUrl
+}
+
+export const getRandomPiece = () => {
+  return pieces[Math.floor(Math.random() * pieces.length)]
 }

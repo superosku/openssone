@@ -1,5 +1,6 @@
 import {Collection, ObjectId} from "mongodb";
-const { promisify } = require("util");
+
+const {promisify} = require("util");
 
 const {MongoClient} = require("mongodb");
 const redis = require("redis");
@@ -141,11 +142,11 @@ app.post('/games/join/:joinSlug', async (req: Request, res: Response) => {
 
   const updateResult = await collection.findOneAndUpdate(
     {_id: game._id},
-    { $set: {players: [...game.players, newPlayer]}}
+    {$set: {players: [...game.players, newPlayer]}}
   )
 
   res.send({
-    data: JSON.stringify(updateResult),
+    data: updateResult.value,
     meta: {you: newPlayer},
   })
 })
@@ -184,22 +185,29 @@ app.post('/games/:gameId/pieces', async (req: Request, res: Response) => {
   const newPieceHolder: IPieceHolder = req.body
   const updateResult = await collection.findOneAndUpdate(
     {_id: game._id},
-    { $set: {pieceHolders: [...game.pieceHolders, newPieceHolder]}}
+    {$set: {pieceHolders: [...game.pieceHolders, newPieceHolder]}}
   )
 
   const redisClient: RedisClient = req.app.locals.redisClient
   const publish = promisify(redisClient.publish).bind(redisClient)
-  console.log('Publishing')
-  const response = await publish("game-event", JSON.stringify({a: 'something'}))
-  console.log('Published', response)
+  const channel = 'game-event:' + game._id
+  console.log('PUBLISHING TO', channel)
+  const response = await publish(
+    channel,
+    JSON.stringify({
+      type: 'new-piece',
+      data: newPieceHolder
+    })
+  )
 
   res.send(JSON.stringify(updateResult))
 })
 
-app.ws('/messages', (ws: ws, req: Request) => {
-  const redisClient: RedisClient = req.app.locals.redisClient
+app.ws('/messages/:gameId', (ws: ws, req: Request) => {
+  const gameId = req.params.gameId
 
-  ws.send('Initial message');
+  const redisClient: RedisClient = req.app.locals.redisClient
+  // ws.send('Initial message');
 
   redisClient.on("message", (channel, message) => {
     console.log("Received data:", channel, message)
@@ -207,7 +215,9 @@ app.ws('/messages', (ws: ws, req: Request) => {
     console.log("Sent to websocket")
   })
 
-  redisClient.subscribe('game-event')
+  const channel = 'game-event:' + gameId
+  console.log('SUBSCRIBING TO', channel)
+  redisClient.subscribe(channel)
 
   // ws.on('message', (msg) => {
   //   ws.send(msg);

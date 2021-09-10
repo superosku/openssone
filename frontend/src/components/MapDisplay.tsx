@@ -24,13 +24,14 @@ export const MapDisplay = (
   const [debugRoads, setDebugRoads] = React.useState<IQuadrant[]>([])
 
   const mapRange = React.useMemo(() => map.getRange(), [map])
+  const padAmount = placeablePiece ? 1 : 0
 
   return <div className={'map-display' + (zoomLevel ? (' zoom-out ' + 'zoom-out-' + zoomLevel) : '')}>
     <table>
       <tbody>
-      {getRange(mapRange.y.min - 1, mapRange.y.max + 1).map(y => {
+      {getRange(mapRange.y.min - padAmount, mapRange.y.max + padAmount).map(y => {
         return <tr key={y}>
-          {getRange(mapRange.x.min - 1, mapRange.x.max + 1).map(x => {
+          {getRange(mapRange.x.min - padAmount, mapRange.x.max + padAmount).map(x => {
             const pieceHolder = map.getAt(x, y)
 
             let pieceStatusClass = ''

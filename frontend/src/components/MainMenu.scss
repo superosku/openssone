@@ -1,0 +1,37 @@
+nav.main-menu {
+  background-color: #28333c;
+
+  ul {
+    display: flex;
+    height: 50px;
+    align-items: center;
+
+    padding: 0;
+    margin: 0;
+    li {
+      list-style-type: none;
+      margin: 0;
+      height: 100%;
+
+      a {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 10px;
+        //padding: 10px;
+        //margin: 10px;
+        //text-align: center;
+        //vertical-align: middle;
+
+        text-decoration: none;
+        color: white;
+
+        &:hover {
+          background-color: #1e272f;
+          //color: gray
+        }
+      }
+    }
+  }
+}

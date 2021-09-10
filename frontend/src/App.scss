@@ -7,44 +7,6 @@ html, body, #root, .main-container {
   display: flex;
   flex-direction: column;
 
-  nav {
-    background-color: #28333c;
-
-    ul {
-      display: flex;
-      height: 50px;
-      align-items: center;
-
-      padding: 0;
-      margin: 0;
-      li {
-        list-style-type: none;
-        margin: 0;
-        height: 100%;
-
-        a {
-          height: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 0 10px;
-          //padding: 10px;
-          //margin: 10px;
-          //text-align: center;
-          //vertical-align: middle;
-
-          text-decoration: none;
-          color: white;
-
-          &:hover {
-            background-color: #1e272f;
-            //color: gray
-          }
-        }
-      }
-    }
-  }
-
   .menu {
     z-index: 10;
     position: absolute;
@@ -140,34 +102,4 @@ html, body, #root, .main-container {
   flex-grow: 1;
   width: 100%;
   overflow: scroll;
-}
-
-.game {
-  .map-container {
-    background-color: #e3e3e3;
-
-    flex-grow: 1;
-    overflow: scroll;
-  }
-
-  .rotation-choices {
-    height: 110px;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    background-color: #c49b48;
-
-    div {
-      padding: 5px;
-
-      &.active {
-        background-color: #7a612d;
-      }
-
-      img {
-        display: inline-block;
-      }
-    }
-  }
 }

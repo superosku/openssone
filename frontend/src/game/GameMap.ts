@@ -42,9 +42,9 @@ export class GameMap {
     this.pieceHolder[`${x}|${y}`] = {x, y, piece}
   }
 
-  randomize() {
-    for (let x = 0; x < 20; x++) {
-      for (let y = 0; y < 20; y++) {
+  randomize(width: number, height: number) {
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
         for (let i = 0; i < 1000; i++) {
           const randomPiece = allRotatedPieces[Math.floor(Math.random() * allRotatedPieces.length)]
           if (this.pieceOkHere(x, y, randomPiece)) {
