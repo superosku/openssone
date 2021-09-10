@@ -1,6 +1,14 @@
 import React from 'react';
 import './App.scss';
 import {FaCheck, FaBars, FaTimes} from 'react-icons/fa';
+import axios from 'axios'
+
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:8888',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
 
 const range = (min: number, max: number) => {
   return [...Array(max - min + 1).keys()].map(i => i + min)
@@ -48,6 +56,15 @@ class Piece {
     this.extraInfo = extraInfo
     this.sideConnections = sideConnections
     this.roadConnections = roadConnections
+  }
+
+  asJson() {
+    return {
+      sideTypes: this.sideTypes,
+      extraInfo: this.extraInfo,
+      sideConnections: this.sideConnections,
+      roadConnections: this.roadConnections,
+    }
   }
 
   getBottom() {
@@ -538,8 +555,8 @@ class Map {
   }
 
   randomize() {
-    for (let x = 0; x < 10; x++) {
-      for (let y = 0; y < 10; y++) {
+    for (let x = 0; x < 20; x++) {
+      for (let y = 0; y < 20; y++) {
         for (let i = 0; i < 1000; i++) {
           const randomPiece = allRotatedPieces[Math.floor(Math.random() * allRotatedPieces.length)]
           if (this.pieceOkHere(x, y, randomPiece)) {
@@ -795,7 +812,8 @@ const MapDisplay = (
                       } else {
                         clickedRoadQuadrant = 0
                       }
-                    } if (clickY >= 45 && clickY <= 55) {
+                    }
+                    if (clickY >= 45 && clickY <= 55) {
                       if (clickX < 50) {
                         clickedRoadQuadrant = 1
                       } else {
@@ -946,7 +964,7 @@ const Game = ({zoomLevel}: IGameProps) => {
 
 const App = () => {
   const [map, setMap] = React.useState(new Map())
-  const [showDebug, setShowDebug] = React.useState(false)
+  const [showDebug, setShowDebug] = React.useState(true)
   const [zoomLevel, setZoomLevel] = React.useState<undefined | number>(undefined)
   const [menuOpen, setMenuOpen] = React.useState(false)
 
@@ -956,11 +974,68 @@ const App = () => {
     setMap(newMap)
   }, [])
 
+  React.useEffect(() => {
+    console.log('Opening socket')
+
+    const socket = new WebSocket('ws://localhost:8888/messages');
+
+    socket.addEventListener('close', (event) => {
+      console.log('Socket closed')
+    });
+
+    socket.addEventListener('open', (event) => {
+      console.log('Socket opened')
+      socket.send('Hello Server!');
+    });
+
+    socket.addEventListener('message', (event) => {
+      console.log('Message from server ', event.data);
+    });
+  }, [])
+
   return (
     <div className={'main-container'}>
+      <div>
+        <button
+          onClick={async () => {
+            const response = await axiosInstance.post('/games/new')
+            console.log(response)
+          }}
+        >newGame
+        </button>
+        <button
+          onClick={async () => {
+            const response = await axiosInstance.post('/games/join/0ekfi')
+            console.log(response)
+          }}>joinGame
+        </button>
+        <button
+          onClick={async () => {
+            const response = await axiosInstance.get('/games/613aefce6ef6423566001988')
+            console.log(response)
+          }}>getGame
+        </button>
+        <button
+          onClick={async () => {
+            const response = await axiosInstance.post(
+              '/games/613aefce6ef6423566001988/pieces',
+              {
+                x: Math.floor(Math.random() * 10) - 5,
+                y: Math.floor(Math.random() * 10) - 5,
+                piece: allRotatedPieces[
+                  Math.floor(Math.random() * allRotatedPieces.length)
+                  ].asJson()
+              }
+            )
+            console.log(response)
+          }}>postPiece
+        </button>
+      </div>
       <div className={'menu' + (menuOpen ? ' open' : ' closed')}>
         {menuOpen ? <>
-          <FaTimes className={'times'} onClick={() => {setMenuOpen(!menuOpen)}} />
+          <FaTimes className={'times'} onClick={() => {
+            setMenuOpen(!menuOpen)
+          }}/>
           <span onClick={() => {
             setShowDebug(!showDebug)
           }}>Toggle debug</span>
@@ -976,7 +1051,9 @@ const App = () => {
           <span onClick={() => {
             setZoomLevel(25)
           }}>25%</span>
-        </> : <FaBars className={'bars'} onClick={() => {setMenuOpen(!menuOpen)}}/>}
+        </> : <FaBars className={'bars'} onClick={() => {
+          setMenuOpen(!menuOpen)
+        }}/>}
       </div>
       {!showDebug && <Game zoomLevel={zoomLevel}/>}
       {showDebug &&
