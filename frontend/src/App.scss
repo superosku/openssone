@@ -3,8 +3,47 @@ html, body, #root, .main-container {
 }
 
 .main-container {
+  height: 100%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+
+  nav {
+    background-color: #28333c;
+
+    ul {
+      display: flex;
+      height: 50px;
+      align-items: center;
+
+      padding: 0;
+      margin: 0;
+      li {
+        list-style-type: none;
+        margin: 0;
+        height: 100%;
+
+        a {
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 0 10px;
+          //padding: 10px;
+          //margin: 10px;
+          //text-align: center;
+          //vertical-align: middle;
+
+          text-decoration: none;
+          color: white;
+
+          &:hover {
+            background-color: #1e272f;
+            //color: gray
+          }
+        }
+      }
+    }
+  }
 
   .menu {
     z-index: 10;
@@ -83,10 +122,11 @@ html, body, #root, .main-container {
 
 .outer {
   display: flex;
+  flex-direction: column;
 
   .inner {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 
     img {
       padding: 2px;
@@ -94,12 +134,15 @@ html, body, #root, .main-container {
   }
 }
 
-.game {
+.main-limited {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   width: 100%;
+  overflow: scroll;
+}
 
+.game {
   .map-container {
     background-color: #e3e3e3;
 
