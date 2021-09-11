@@ -103,3 +103,28 @@ html, body, #root, .main-container {
   width: 100%;
   overflow: scroll;
 }
+
+.players {
+  .you {
+    font-weight: bold;
+    text-decoration: underline;
+  }
+  .player-0 {
+    color: green;
+  }
+  .player-1 {
+    color: blue;
+  }
+  .player-2 {
+    color: purple;
+  }
+  .player-3 {
+    color: orange;
+  }
+  .player-4 {
+    color: aqua;
+  }
+  .player-5 {
+    color: red;
+  }
+}

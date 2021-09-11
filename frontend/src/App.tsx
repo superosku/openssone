@@ -15,6 +15,7 @@ import {
 } from "react-router-dom";
 import {OnlineGame} from "./layouts/OnlineGame";
 import {OfflineGame} from "./layouts/OfflineGame";
+import {GameLobby} from "./layouts/GameLobby";
 
 const GeneratedMap = () => {
   const [map, setMap] = React.useState(new GameMap())
@@ -65,6 +66,7 @@ const App = () => {
         <Route path={'/generated'}><GeneratedMap/></Route>
         <Route path={'/pieces'}><AllPieces/></Route>
         <Route path={'/games'} exact><Games /></Route>
+        <Route path={'/games/:gameId/:joinSlug/lobby'} exact><GameLobby /></Route>
         <Route path={'/games/:gameId/:joinSlug'} exact><OnlineGame /></Route>
       </Switch>
     </div>

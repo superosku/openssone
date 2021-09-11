@@ -3,7 +3,7 @@ import React from "react";
 import {useHistory} from "react-router-dom";
 import {Loader} from "../components/Loader";
 
-interface IResponsePlayer {
+export interface IResponsePlayer {
   id: string
   joinSlug: string
   name: string
@@ -26,9 +26,16 @@ export interface IResponseGame {
   createdAt: string
   joinSlug: string
   pieceHolders: IResponsePieceHolder[]
-  players: IResponsePiece[]
+  players: IResponsePlayer[]
   turn: string
   _id: string
+}
+
+export interface IGameInfo {
+  data: IResponseGame,
+  meta: {
+    you: IResponsePlayer
+  },
 }
 
 
@@ -59,7 +66,7 @@ export const Games = () => {
               const response = await axiosInstance.post('/games/join/' + game.joinSlug)
               const gameId = response.data.data._id
               const joinSlug = response.data.meta.you.joinSlug
-              history.push(`/games/${gameId}/${joinSlug}`)
+              history.push(`/games/${gameId}/${joinSlug}/lobby`)
             }}>Join
           </button>
         </li>
@@ -74,8 +81,11 @@ export const Games = () => {
           onClick={async () => {
             setLoading(true)
             const response = await axiosInstance.post('/games/new')
-            await loadGames()
-            setLoading(false)
+            const gameId = response.data.data._id
+            const joinSlug = response.data.meta.you.joinSlug
+            history.push(`/games/${gameId}/${joinSlug}/lobby`)
+            // await loadGames()
+            // setLoading(false)
           }}
         >newGame
         </button>

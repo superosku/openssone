@@ -54,17 +54,6 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
   next()
 })
 
-// redis middleware
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-  const redisClient = redis.createClient();
-  req.app.locals.redisClient = redisClient
-
-  res.on('finish', async () => {
-    // await mongoClient.close()
-  })
-  next()
-})
-
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello GET');
 })
@@ -73,6 +62,7 @@ interface IPlayer {
   name: string,
   id: string,
   joinSlug: string,
+  lastPing: Date,
 }
 
 interface IPiece {
@@ -84,6 +74,7 @@ interface IPiece {
 
 interface IPieceHolder {
   piece: IPiece,
+  playerId: string,
   x: number,
   y: number,
 }
@@ -104,6 +95,7 @@ app.post('/games/new', async (req: Request, res: Response) => {
     name: randomName(),
     id: makeId(5),
     joinSlug: makeId(10),
+    lastPing: new Date()
   }
 
   const game: IGame = {
@@ -138,6 +130,7 @@ app.post('/games/join/:joinSlug', async (req: Request, res: Response) => {
     name: randomName(),
     id: makeId(5),
     joinSlug: makeId(10),
+    lastPing: new Date()
   }
 
   const updateResult = await collection.findOneAndUpdate(
@@ -168,7 +161,18 @@ app.get('/games/:gameId', async (req: Request, res: Response) => {
     return
   }
 
-  res.send(JSON.stringify(game))
+  const joinSlug = req.headers.authorization && req.headers.authorization.split(' ')[1]
+  const currentPlayer = game.players.filter(p => p.joinSlug === joinSlug)[0]
+
+  if (!currentPlayer) {
+    res.sendStatus(401)
+    return
+  }
+
+  res.send(JSON.stringify({
+    data: game,
+    meta: {you: currentPlayer}
+  }))
 })
 
 app.post('/games/:gameId/pieces', async (req: Request, res: Response) => {
@@ -182,13 +186,21 @@ app.post('/games/:gameId/pieces', async (req: Request, res: Response) => {
     return
   }
 
-  const newPieceHolder: IPieceHolder = req.body
+  const joinSlug = req.headers.authorization && req.headers.authorization.split(' ')[1]
+  const currentPlayer = game.players.filter(p => p.joinSlug === joinSlug)[0]
+
+  if (!currentPlayer) {
+    res.sendStatus(401)
+    return
+  }
+
+  const newPieceHolder: IPieceHolder = {...req.body, playerId: currentPlayer.id}
   const updateResult = await collection.findOneAndUpdate(
     {_id: game._id},
     {$set: {pieceHolders: [...game.pieceHolders, newPieceHolder]}}
   )
 
-  const redisClient: RedisClient = req.app.locals.redisClient
+  const redisClient = redis.createClient();
   const publish = promisify(redisClient.publish).bind(redisClient)
   const channel = 'game-event:' + game._id
   console.log('PUBLISHING TO', channel)
@@ -196,42 +208,80 @@ app.post('/games/:gameId/pieces', async (req: Request, res: Response) => {
     channel,
     JSON.stringify({
       type: 'new-piece',
+      playerId: currentPlayer.id,
       data: newPieceHolder
     })
   )
 
-  res.send(JSON.stringify(updateResult))
+  res.sendStatus(201)
+  // res.send(JSON.stringify(updateResult))
 })
 
-app.ws('/messages/:gameId', (ws: ws, req: Request) => {
+app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
   const gameId = req.params.gameId
+  const channelSlug = 'game-event:' + gameId
 
-  const redisClient: RedisClient = req.app.locals.redisClient
-  // ws.send('Initial message');
+  const collection: Collection<IGame> = await req.app.locals.db.collection('games')
+  const game: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
 
-  redisClient.on("message", (channel, message) => {
+  if (!game) {
+    ws.close(404)
+    return
+  }
+
+  const h = (req.headers['sec-websocket-protocol'] || '') as string
+  const joinSlug = h.split(' ')[1]
+  const currentPlayer = game.players.filter(p => p.joinSlug === joinSlug)[0]
+
+  if (!currentPlayer) {
+    ws.close(401)
+    return
+  }
+
+  // Send all redis messages to the client
+  const redisClient: RedisClient = redis.createClient();
+  redisClient.on("message", async (channel, message) => {
     console.log("Received data:", channel, message)
     ws.send(message);
     console.log("Sent to websocket")
   })
+  redisClient.subscribe(channelSlug)
 
-  const channel = 'game-event:' + gameId
-  console.log('SUBSCRIBING TO', channel)
-  redisClient.subscribe(channel)
+  // On received messages, publish to redis client
+  const publishRedisClient: RedisClient = redis.createClient();
+  const publish = promisify(publishRedisClient.publish).bind(publishRedisClient)
+  ws.on('message', async (msg) => {
+    console.log("Web socket received data:", channelSlug, msg)
+    const data = JSON.parse(msg as string)
+    await publish(
+      channelSlug,
+      JSON.stringify({
+        ...data,
+        playerId: currentPlayer.id
+      })
+    )
+  });
 
-  // ws.on('message', (msg) => {
-  //   ws.send(msg);
-  // });
+
+  // redisClient.on("message", async (channel, message) => {
+  //   // ws.send(message);
+  //   console.log("Sent to websocket")
+  //
+  //   const publish = promisify(redisClient.publish).bind(redisClient)
+  //   // const channel = 'game-event:' + gameId
+  //   console.log('PUBLISHING TO', channel)
+  //   const response = await publish(
+  //     channel,
+  //     message
+  //     // JSON.stringify({
+  //     //   type: 'new-piece',
+  //     //   data: newPieceHolder
+  //     // })
+  //   )
+  // })
+
+  console.log('SUBSCRIBING TO', channelSlug)
 });
-
-// app.get('/echo', (req: Request, res: Response) => {
-//   res.end()
-// })
-// app.ws('/echo', (ws: ws, req: Request) => {
-//   ws.on('message', (msg) => {
-//     ws.send(msg);
-//   });
-// });
 
 const server = app.listen(8888, () => {
   const host = server.address().address
@@ -239,33 +289,3 @@ const server = app.listen(8888, () => {
 
   console.log("Example app listening at http://%s:%s", host, port)
 })
-
-
-// const hostname = '127.0.0.1';
-// const port = 3000;
-//
-// const server = http.createServer(
-//   async (req: typeof IncomingMessage, res: typeof ServerResponse) => {
-//     res.statusCode = 200;
-//     res.setHeader('Content-Type', 'text/plain');
-//     res.end('Hello World');
-//
-//     try {
-//       await mongoClient.connect();
-//       const mongoDb = mongoClient.db('tempdb');
-//       const gamesCollection = mongoDb.collection('games');
-//
-//       // Query for a movie that has the title 'Back to the Future'
-//       const game = await gamesCollection.findOne({});
-//
-//       console.log('movie', game);
-//     } finally {
-//       await mongoClient.close();
-//     }
-//
-//   });
-//
-// server.listen(port, hostname, () => {
-//   console.log(`Server running at http://${hostname}:${port}/`);
-// });
-//
