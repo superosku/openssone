@@ -1,6 +1,7 @@
 $loaderColor: #1d2a34;
 
 .full-loader {
+  z-index: 20;
   position: absolute;
   top: 0;
   bottom: 0;

@@ -105,9 +105,19 @@ html, body, #root, .main-container {
 }
 
 .players {
+  li {
+    display: flex;
+    align-items: center;
+  }
   .you {
-    font-weight: bold;
     text-decoration: underline;
+    font-weight: bold;
+  }
+  .turn {
+  }
+  li.offline {
+    text-decoration: line-through;
+    color: gray;
   }
   .player-0 {
     color: green;

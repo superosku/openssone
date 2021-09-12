@@ -29,6 +29,7 @@ export interface IResponseGame {
   players: IResponsePlayer[]
   turn: string
   _id: string
+  status: 'created' | 'started' | 'done'
 }
 
 export interface IGameInfo {
@@ -66,7 +67,7 @@ export const Games = () => {
               const response = await axiosInstance.post('/games/join/' + game.joinSlug)
               const gameId = response.data.data._id
               const joinSlug = response.data.meta.you.joinSlug
-              history.push(`/games/${gameId}/${joinSlug}/lobby`)
+              history.push(`/games/${gameId}/${joinSlug}`)
             }}>Join
           </button>
         </li>
@@ -83,7 +84,7 @@ export const Games = () => {
             const response = await axiosInstance.post('/games/new')
             const gameId = response.data.data._id
             const joinSlug = response.data.meta.you.joinSlug
-            history.push(`/games/${gameId}/${joinSlug}/lobby`)
+            history.push(`/games/${gameId}/${joinSlug}`)
             // await loadGames()
             // setLoading(false)
           }}

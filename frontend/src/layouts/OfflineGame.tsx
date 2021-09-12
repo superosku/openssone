@@ -2,9 +2,6 @@ import {BaseGame} from "../components/BaseGame";
 import React from "react";
 import {GameMap} from "../game/GameMap";
 import {pieces} from "../game/defaultPieces";
-import {getRandomPiece} from "../utils";
-import {MapDisplay} from "../components/MapDisplay";
-import {Piece} from "../game/Piece";
 
 
 export const OfflineGame = () => {

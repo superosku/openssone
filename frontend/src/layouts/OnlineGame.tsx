@@ -6,8 +6,9 @@ import {axiosInstance} from "../utils";
 import {IGameInfo, IResponsePieceHolder} from "./Games";
 import {GameMap} from "../game/GameMap";
 import {Piece} from "../game/Piece";
-import {BaseGame} from "../components/BaseGame";
 import {Loader} from "../components/Loader";
+import {GameLobby} from "./GameLobby";
+import {OnlineGameDisplay} from "../components/OnlineGameDisplay";
 
 
 interface IDebugMessage {
@@ -16,12 +17,18 @@ interface IDebugMessage {
   date: Date
 }
 
+export interface ILatestPings {
+  [key: string]: Date
+}
+
 export const OnlineGame = () => {
   const {gameId, joinSlug} = useParams<{ gameId: string, joinSlug: string }>();
   const [map, setMap] = React.useState<GameMap>(new GameMap())
   const [loading, setLoading] = React.useState(true)
   const [gameInfo, setGameInfo] = React.useState<undefined | IGameInfo>(undefined)
   const [debugMessages, setDebugMessages] = React.useState<IDebugMessage[]>([])
+  const [latestPings, setLatestPings] = React.useState<ILatestPings>({})
+  const [socket, setSocket] = React.useState<undefined | WebSocket>(undefined)
 
   const fetchGame = async () => {
     const response = await axiosInstance.get(
@@ -72,6 +79,35 @@ export const OnlineGame = () => {
         }, 10000
       )
 
+      if (message.type === 'player-joins') {
+        console.log('player joined')
+        fetchGame()
+      }
+      if (message.type === 'start-game') {
+        setGameInfo(cur => {
+          if (!cur) {
+            return cur
+          }
+          return {...cur, data: {...cur.data, status: 'started'}}
+        })
+      }
+      if (message.type === 'ping') {
+        setLatestPings((cur) => {
+          let n = {...cur}
+          n[message.playerId] = new Date()
+          console.log('ping times', n)
+          return n
+        })
+      }
+      if (message.type === 'set-turn') {
+        setGameInfo(cur => {
+          if (!cur) {
+            return cur
+          }
+          console.log('setting turn to ', message.data.playerId)
+          return {...cur, data: {...cur.data, turn: message.data.playerId}}
+        })
+      }
       if (message.type === 'new-piece') {
         setMap(currentMap => {
           let newMap = currentMap.clone()
@@ -91,13 +127,27 @@ export const OnlineGame = () => {
         setLoading(false)
       }
     });
+
     return socket
   }
 
   const initialize = async () => {
     await fetchGame()
     const socket = await openSocket()
+
+    // Wait until socket is opened
+    await new Promise((resolve) => {
+      if (socket.readyState !== WebSocket.OPEN) {
+        socket.onopen = (ev) => { // Set on open handler
+          resolve(undefined)
+        }
+      } else {
+        resolve(undefined) // Resolve if state is already open
+      }
+    })
+
     setLoading(false)
+    setSocket(socket)
     return socket
   }
 
@@ -107,14 +157,9 @@ export const OnlineGame = () => {
     initialize().then((s) => {
       socket = s
       intervalId = window.setInterval(() => {
-        console.log('interval')
-        if (socket) {
-          console.log('interval sending')
-          socket.send(JSON.stringify({
-            type: 'ping'
-          }))
-        }
+        s.send(JSON.stringify({type: 'ping'}))
       }, 10000)
+      s.send(JSON.stringify({type: 'ping'}))
     })
     return () => {
       if (socket) {
@@ -126,20 +171,36 @@ export const OnlineGame = () => {
     }
   }, [])
 
+  if (!gameInfo || !socket) {
+    return <Loader full/>
+  }
+
   return <div className={'online-game main-limited'}>
-    {loading && <Loader full/>}
-    {(!loading && map && gameInfo) && <>
-      <div className={'players-container'}>
-        <ul className={'players'}>
-          {gameInfo.data.players.map((player, i) => {
-            return <li
-              key={player.id}
-              className={'player-' + i + (player.id === gameInfo.meta.you.id ? ' you' : '')}
-            >{player.name}</li>
-          })}
-        </ul>
-      </div>
-      {debugMessages.length > 0 && <div className={'debug-messages'}>
+    {loading && <Loader full />}
+    {gameInfo.data.status === 'created' && <GameLobby
+      gameInfo={gameInfo}
+      socket={socket}
+      latestPings={latestPings}
+    />}
+    {gameInfo.data.status === 'started' && <OnlineGameDisplay
+      gameInfo={gameInfo}
+      map={map}
+      latestPings={latestPings}
+      onPieceSet={async (x, y, piece) => {
+        setLoading(true)
+        if (socket) {
+          socket.send(JSON.stringify({
+            type: 'new-piece',
+            data: {
+              x, y, piece: piece.asJson()
+            }
+          }))
+        }
+      }}
+    />}
+    {gameInfo.data.status === 'done' && <h1>Game is done</h1>}
+    {
+      debugMessages.length > 0 && <div className={'debug-messages'}>
         <ul>
           {debugMessages.map((msg) => {
             return <li
@@ -147,18 +208,7 @@ export const OnlineGame = () => {
             >{msg.playerId} - {msg.type}</li>
           })}
         </ul>
-      </div>}
-      <BaseGame
-        map={map}
-        onSetPiece={async (x, y, piece) => {
-          setLoading(true)
-          const response = await axiosInstance.post(
-            '/games/' + gameId + '/pieces',
-            {x, y, piece: piece.asJson()},
-            {headers: {'Authorization': 'Bearer ' + joinSlug}}
-          )
-        }}
-      />
-    </>}
+      </div>
+    }
   </div>
 }

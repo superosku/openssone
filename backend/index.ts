@@ -9,7 +9,6 @@ const express = require('express');
 import {Request, Response, NextFunction} from 'express'
 import * as ws from 'ws';
 import {RedisClient} from "redis";
-// const cors = require('cors')
 
 const app = express();
 const expressWs = require('express-ws')(app);
@@ -86,6 +85,7 @@ interface IGame {
   players: IPlayer[],
   pieceHolders: IPieceHolder[],
   turn: string,
+  status: 'created' | 'started' | 'done'
 }
 
 app.post('/games/new', async (req: Request, res: Response) => {
@@ -104,6 +104,7 @@ app.post('/games/new', async (req: Request, res: Response) => {
     players: [player],
     turn: player.id,
     pieceHolders: [],
+    status: 'created',
   }
   const result = await collection.insertOne(game)
   game._id = result.insertedId
@@ -126,6 +127,11 @@ app.post('/games/join/:joinSlug', async (req: Request, res: Response) => {
     return
   }
 
+  if (game.status !== 'created') {
+    res.sendStatus(401)
+    return
+  }
+
   const newPlayer: IPlayer = {
     name: randomName(),
     id: makeId(5),
@@ -142,6 +148,11 @@ app.post('/games/join/:joinSlug', async (req: Request, res: Response) => {
     data: updateResult.value,
     meta: {you: newPlayer},
   })
+
+  const publishRedisClient: RedisClient = redis.createClient();
+  const publish = promisify(publishRedisClient.publish).bind(publishRedisClient)
+  const channelSlug = 'game-event:' + game._id
+  await publish(channelSlug, JSON.stringify({type: 'player-joins'}))
 })
 
 app.get('/games', async (req: Request, res: Response) => {
@@ -175,63 +186,21 @@ app.get('/games/:gameId', async (req: Request, res: Response) => {
   }))
 })
 
-app.post('/games/:gameId/pieces', async (req: Request, res: Response) => {
-  const gameId = req.params.gameId
-
-  const collection: Collection<IGame> = await req.app.locals.db.collection('games')
-  const game: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
-
-  if (!game) {
-    res.sendStatus(404);
-    return
-  }
-
-  const joinSlug = req.headers.authorization && req.headers.authorization.split(' ')[1]
-  const currentPlayer = game.players.filter(p => p.joinSlug === joinSlug)[0]
-
-  if (!currentPlayer) {
-    res.sendStatus(401)
-    return
-  }
-
-  const newPieceHolder: IPieceHolder = {...req.body, playerId: currentPlayer.id}
-  const updateResult = await collection.findOneAndUpdate(
-    {_id: game._id},
-    {$set: {pieceHolders: [...game.pieceHolders, newPieceHolder]}}
-  )
-
-  const redisClient = redis.createClient();
-  const publish = promisify(redisClient.publish).bind(redisClient)
-  const channel = 'game-event:' + game._id
-  console.log('PUBLISHING TO', channel)
-  const response = await publish(
-    channel,
-    JSON.stringify({
-      type: 'new-piece',
-      playerId: currentPlayer.id,
-      data: newPieceHolder
-    })
-  )
-
-  res.sendStatus(201)
-  // res.send(JSON.stringify(updateResult))
-})
-
 app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
   const gameId = req.params.gameId
   const channelSlug = 'game-event:' + gameId
 
   const collection: Collection<IGame> = await req.app.locals.db.collection('games')
-  const game: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
+  const origGame: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
 
-  if (!game) {
+  if (!origGame) {
     ws.close(404)
     return
   }
 
   const h = (req.headers['sec-websocket-protocol'] || '') as string
   const joinSlug = h.split(' ')[1]
-  const currentPlayer = game.players.filter(p => p.joinSlug === joinSlug)[0]
+  const currentPlayer = origGame.players.filter(p => p.joinSlug === joinSlug)[0]
 
   if (!currentPlayer) {
     ws.close(401)
@@ -243,7 +212,7 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
   redisClient.on("message", async (channel, message) => {
     console.log("Received data:", channel, message)
     ws.send(message);
-    console.log("Sent to websocket")
+    console.log("Sent to websocket to", currentPlayer.id)
   })
   redisClient.subscribe(channelSlug)
 
@@ -251,8 +220,46 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
   const publishRedisClient: RedisClient = redis.createClient();
   const publish = promisify(publishRedisClient.publish).bind(publishRedisClient)
   ws.on('message', async (msg) => {
-    console.log("Web socket received data:", channelSlug, msg)
     const data = JSON.parse(msg as string)
+    console.log("Web socket received data:", channelSlug, msg)
+
+    const currentGame: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
+
+    if (!currentGame) {
+      return
+    }
+
+    if (data.type === 'start-game') {
+      await collection.findOneAndUpdate(
+        {_id: currentGame._id},
+        {
+          $set: {
+            status: 'started'
+          }
+        }
+      )
+    }
+
+    // Place new piece to mongo
+    if (data.type === 'new-piece') {
+      const newPieceHolder: IPieceHolder = {...data.data, playerId: currentPlayer.id}
+      console.log('newPieceHolder', newPieceHolder)
+      const curPlayerIndex = origGame.players.findIndex((p) => p.id === currentPlayer.id)
+      const nextPlayerId = origGame.players[(curPlayerIndex + 1) % origGame.players.length].id
+
+      await collection.findOneAndUpdate(
+        {_id: currentGame._id},
+        {
+          $set: {
+            turn: nextPlayerId,
+            pieceHolders: [...currentGame.pieceHolders, newPieceHolder]
+          }
+        }
+      )
+      await publish(channelSlug, JSON.stringify({type: 'set-turn', data: {playerId: nextPlayerId}}))
+    }
+
+    // Publish to redis
     await publish(
       channelSlug,
       JSON.stringify({
@@ -262,25 +269,13 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
     )
   });
 
+  ws.on('close', (code: number, reason: string) => {
+    console.log('Websocket close', code, reason)
+    redisClient.unsubscribe(channelSlug)
+    redisClient.quit()
+  })
 
-  // redisClient.on("message", async (channel, message) => {
-  //   // ws.send(message);
-  //   console.log("Sent to websocket")
-  //
-  //   const publish = promisify(redisClient.publish).bind(redisClient)
-  //   // const channel = 'game-event:' + gameId
-  //   console.log('PUBLISHING TO', channel)
-  //   const response = await publish(
-  //     channel,
-  //     message
-  //     // JSON.stringify({
-  //     //   type: 'new-piece',
-  //     //   data: newPieceHolder
-  //     // })
-  //   )
-  // })
-
-  console.log('SUBSCRIBING TO', channelSlug)
+  console.log('REDIS SUBSCRIBING TO', channelSlug)
 });
 
 const server = app.listen(8888, () => {

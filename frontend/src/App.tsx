@@ -6,7 +6,6 @@ import {getImageDataUrl} from "./utils";
 import {MapDisplay} from "./components/MapDisplay";
 import {MainMenu} from './components/MainMenu'
 import {Games} from './layouts/Games'
-import {BaseGame} from './components/BaseGame'
 
 import {
   BrowserRouter as Router,
@@ -15,7 +14,6 @@ import {
 } from "react-router-dom";
 import {OnlineGame} from "./layouts/OnlineGame";
 import {OfflineGame} from "./layouts/OfflineGame";
-import {GameLobby} from "./layouts/GameLobby";
 
 const GeneratedMap = () => {
   const [map, setMap] = React.useState(new GameMap())
@@ -46,18 +44,6 @@ const AllPieces = () => {
 }
 
 const App = () => {
-  // const [map, setMap] = React.useState(new GameMap())
-  // const [showDebug, setShowDebug] = React.useState(false)
-  // const [zoomLevel, setZoomLevel] = React.useState<undefined | number>(undefined)
-  // const [menuOpen, setMenuOpen] = React.useState(false)
-  //
-  // React.useEffect(() => {
-  //   let newMap = map.clone()
-  //   newMap.randomize()
-  //   setMap(newMap)
-  // }, [])
-
-
   return <Router>
     <div className={'main-container'}>
       <MainMenu/>
@@ -66,7 +52,6 @@ const App = () => {
         <Route path={'/generated'}><GeneratedMap/></Route>
         <Route path={'/pieces'}><AllPieces/></Route>
         <Route path={'/games'} exact><Games /></Route>
-        <Route path={'/games/:gameId/:joinSlug/lobby'} exact><GameLobby /></Route>
         <Route path={'/games/:gameId/:joinSlug'} exact><OnlineGame /></Route>
       </Switch>
     </div>
