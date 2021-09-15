@@ -197,6 +197,9 @@ export const OnlineGame = () => {
           }))
         }
       }}
+      onCharacterSet={async (x, y, pos) => {
+          
+      }}
     />}
     {gameInfo.data.status === 'done' && <h1>Game is done</h1>}
     {

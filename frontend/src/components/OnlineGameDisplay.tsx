@@ -2,7 +2,7 @@ import './OnlineGameDisplay.scss'
 import {BaseGame} from "./BaseGame";
 import React from "react";
 import {ILatestPings} from "../layouts/OnlineGame";
-import {GameMap} from "../game/GameMap";
+import {GameMap, IPiecePos} from "../game/GameMap";
 import {IGameInfo} from "../layouts/Games";
 import {Piece} from "../game/Piece";
 import {PlayerList} from "./PlayerList";
@@ -12,6 +12,7 @@ interface IOnlineGameDisplayProps {
   map: GameMap
   latestPings: ILatestPings
   onPieceSet: (x: number, y: number, piece: Piece) => void
+  onCharacterSet: (x: number, y: number, pos: IPiecePos) => void
 }
 
 export const OnlineGameDisplay = (
@@ -20,6 +21,7 @@ export const OnlineGameDisplay = (
     gameInfo,
     latestPings,
     onPieceSet,
+    onCharacterSet,
   }: IOnlineGameDisplayProps
 ) => {
 
@@ -30,6 +32,7 @@ export const OnlineGameDisplay = (
     <BaseGame
       map={map}
       onSetPiece={onPieceSet}
+      onSetCharacter={onCharacterSet}
     />
   </>
 }

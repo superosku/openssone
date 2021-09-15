@@ -19,11 +19,26 @@ export interface IQuadrant {
   road: number
 }
 
+export interface ICharacter {
+  x: number
+  y: number
+  iPiecePos: IPiecePos
+  team: number
+}
+
+export interface IPiecePos {
+  quadrant: number | undefined
+  octant: number | undefined
+  middle: boolean
+}
+
 export class GameMap {
   pieceHolder: { [key: string]: IPieceHolder }
+  characterHolder: { [key: string]: ICharacter }
 
   constructor() {
     this.pieceHolder = {}
+    this.characterHolder = {}
   }
 
   clone() {
@@ -35,11 +50,23 @@ export class GameMap {
       a[key] = {...this.pieceHolder[key]}
       return a
     }, {})
+    newMap.characterHolder = Object.keys(this.characterHolder).reduce((
+      a: { [key: string]: ICharacter },
+      key
+    ) => {
+      a[key] = {...this.characterHolder[key]}
+      return a
+    }, {})
     return newMap
   }
 
   setPiece(x: number, y: number, piece: Piece) {
     this.pieceHolder[`${x}|${y}`] = {x, y, piece}
+  }
+
+  setCharacter(x: number, y: number, iPiecePos: IPiecePos, team: number) {
+    const key = (`${x}|${y}|${iPiecePos.middle}|${iPiecePos.quadrant}|${iPiecePos.octant}`)
+    this.characterHolder[key] = {x, y, iPiecePos, team}
   }
 
   randomize(width: number, height: number) {
@@ -195,7 +222,7 @@ export class GameMap {
       const roadIndex = thisPiece.roadConnections[current.road]
 
       if (roadIndex === 0) {
-        return
+        return []
       }
 
       for (let i = 0; i < thisPiece.roadConnections.length; i++) {
@@ -225,6 +252,17 @@ export class GameMap {
       }
     }
     return visited
+  }
+
+
+
+  getAllCharacters() {
+    let allCharacters: ICharacter[] = [];
+
+    for (let key in this.characterHolder) {
+      allCharacters.push(this.characterHolder[key])
+    }
+    return allCharacters
   }
 
 }

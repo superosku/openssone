@@ -42,81 +42,97 @@
 
       position: relative;
 
-      .debug-octant {
-        position: absolute;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        border: 2px solid #8923b5;
-        background-color: #ac42db;
-
-        &.debug-octant-0 {
-          bottom: 10px;
-          right: 20px;
-        }
-
-        &.debug-octant-1 {
-          bottom: 10px;
-          left: 20px;
-        }
-
-        &.debug-octant-2 {
-          bottom: 20px;
-          left: 10px;
-        }
-
-        &.debug-octant-3 {
-          top: 20px;
-          left: 10px;
-        }
-
-        &.debug-octant-4 {
-          top: 10px;
-          left: 20px;
-        }
-
-        &.debug-octant-5 {
-          top: 10px;
-          right: 20px;
-        }
-
-        &.debug-octant-6 {
-          top: 20px;
-          right: 10px;
-        }
-
-        &.debug-octant-7 {
-          bottom: 20px;
-          right: 10px;
-        }
+      .octant-0 {
+        bottom: 10px;
+        right: 20px;
       }
 
-      .debug-road {
+      .octant-1 {
+        bottom: 10px;
+        left: 20px;
+      }
+
+      .octant-2 {
+        bottom: 20px;
+        left: 10px;
+      }
+
+      .octant-3 {
+        top: 20px;
+        left: 10px;
+      }
+
+      .octant-4 {
+        top: 10px;
+        left: 20px;
+      }
+
+      .octant-5 {
+        top: 10px;
+        right: 20px;
+      }
+
+      .octant-6 {
+        top: 20px;
+        right: 10px;
+      }
+
+      .octant-7 {
+        bottom: 20px;
+        right: 10px;
+      }
+
+
+      .quadrant-0 {
+        bottom: 10px;
+        right: 50px;
+      }
+
+      .quadrant-1 {
+        bottom: 50px;
+        left: 10px;
+      }
+
+      .quadrant-2 {
+        top: 10px;
+        left: 50px;
+      }
+
+      .quadrant-3 {
+        top: 50px;
+        right: 10px;
+      }
+
+      .middle {
+        top: 50px;
+        right: 50px;
+      }
+
+      .debug {
         position: absolute;
         width: 5px;
         height: 5px;
         border-radius: 50%;
         border: 2px solid #8923b5;
         background-color: #ac42db;
+        margin: -4.5px;
+      }
 
-        &.debug-road-0 {
-          bottom: 10px;
-          right: 46px;
+      .character {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        z-index: 10;
+        margin: -12px;
+
+        &.character-team-1 {
+          border: 2px solid #a00505;
+          background-color: #f31010;
         }
-
-        &.debug-road-1 {
-          bottom: 46px;
-          left: 10px;
-        }
-
-        &.debug-road-2 {
-          top: 10px;
-          left: 46px;
-        }
-
-        &.debug-road-3 {
-          top: 46px;
-          right: 10px;
+        &.character-team-2 {
+          border: 2px solid #6705a0;
+          background-color: #2710f3;
         }
       }
 
