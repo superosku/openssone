@@ -112,15 +112,20 @@ export const MapDisplay = (
           {getRange(mapRange.x.min - padAmount, mapRange.x.max + padAmount).map(x => {
             const pieceHolder = map.getAt(x, y)
 
+            let previewPiece: undefined | Piece = undefined
             let pieceStatusClass = ''
             if (placeablePiece) {
               if (map.pieceOkHere(x, y, placeablePiece)) {
+                previewPiece = placeablePiece
                 pieceStatusClass = 'ok'
               } else {
-                if ([1, 2, 3].some((i) =>
-                  map.pieceOkHere(x, y, placeablePiece.getRotated(i))
-                )) {
-                  pieceStatusClass = 'ok-rotated'
+                for (let i = 1; i <= 3; i ++) {
+                  const rotPiece = placeablePiece.getRotated(i)
+                  if (map.pieceOkHere(x, y, rotPiece)) {
+                    pieceStatusClass = 'ok-rotated'
+                    previewPiece = rotPiece
+                    break
+                  }
                 }
               }
             }
@@ -191,6 +196,7 @@ export const MapDisplay = (
               {pieceStatusClass && <div className={'piece-status ' + pieceStatusClass}>
                 <FaCheck/>
               </div>}
+              {previewPiece && <img className={'preview'} src={getImageDataUrl(previewPiece)} />}
             </td>
           })}
         </tr>

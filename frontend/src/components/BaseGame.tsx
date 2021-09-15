@@ -1,7 +1,6 @@
 import React from "react";
 import './BaseGame.scss'
 import {GameMap, IPiecePos} from "../game/GameMap";
-import {pieces} from "../game/defaultPieces";
 import {MapDisplay} from "./MapDisplay";
 import {getImageDataUrl, getRandomPiece} from "../utils";
 import {Piece} from "../game/Piece";

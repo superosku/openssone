@@ -19,6 +19,7 @@ export const getImageDataUrl = (piece: Piece) => {
   const colorRoad = '#b1aaa1'
   const colorCastle = '#7a5233'
   const colorCastleBoarder = '#6b482d'
+  const colorCastleBoarderHilight = '#4c321f'
   const colorWater = '#2358a7'
   const colorMonastery = '#96582f'
   const colorMonasteryBorder = '#704122'
@@ -40,11 +41,8 @@ export const getImageDataUrl = (piece: Piece) => {
     ctx.fillStyle = colorCastle
     ctx.fillRect(0, 0, 100, 100)
     ctx.fill()
-    ctx.stroke()
     return canvas.toDataURL("image/png");
   }
-
-  ctx.lineWidth = 5;
 
   // Fill groun with green
   ctx.fillStyle = colorGround
@@ -52,16 +50,37 @@ export const getImageDataUrl = (piece: Piece) => {
   ctx.fillRect(0, 0, 100, 100)
   ctx.strokeRect(0, 0, 100, 100)
 
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 500; i ++) {
+    const x = Math.round(Math.random() * 100)
+    const y = Math.round(Math.random() * 100)
+    const length = Math.round(Math.random() * 5 + 3)
+    ctx.strokeStyle = `rgb(
+      ${Math.round(62 - 5 + Math.random() * 10)},
+      ${Math.round(138 - 2 + Math.random() * 40)},
+      ${Math.round(34 - 5 + Math.random() * 10)}
+    `
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + length);
+    ctx.stroke();
+  }
+
+  ctx.lineWidth = 5;
+
   for (let i = 0; i < 4; i++) {
     const sideType = piece.sideTypes[i]
     ctx.translate(50, 50)
 
     // Roads and rivers
     if (sideType === PieceSideType.road || sideType === PieceSideType.river) {
+
       if (sideType === PieceSideType.river) {
         ctx.strokeStyle = colorWater
+        ctx.lineWidth = 15;
       } else {
         ctx.strokeStyle = colorRoad
+        ctx.lineWidth = 5;
       }
 
       const canArch = (
@@ -146,6 +165,7 @@ export const getImageDataUrl = (piece: Piece) => {
       }
     }
 
+    ctx.lineWidth = 5;
     // Castles
     if (
       sideType === PieceSideType.castle
@@ -171,12 +191,18 @@ export const getImageDataUrl = (piece: Piece) => {
         ctx.lineTo(-50, -50);
         ctx.fill();
 
-        ctx.beginPath();
-        ctx.moveTo(50, -50);
-        ctx.lineTo(-15, -25);
-        ctx.lineTo(-15, 25);
-        ctx.lineTo(50, 50);
-        ctx.stroke()
+        for (let i = 0; i < 2; i++) {
+          ctx.beginPath();
+          ctx.moveTo(50, -50);
+          ctx.lineTo(-15, -25);
+          ctx.lineTo(-15, 25);
+          ctx.lineTo(50, 50);
+          ctx.stroke()
+          ctx.setLineDash([3, 3])
+          ctx.lineWidth = 8;
+        }
+        ctx.setLineDash([])
+        ctx.lineWidth = 5;
       } else if (
         piece.sideTypes[(i + 1) % 4] === PieceSideType.castle &&
         piece.extraInfo !== PieceExtraInfo.nonConnectedSideBySideCastle
@@ -188,11 +214,17 @@ export const getImageDataUrl = (piece: Piece) => {
         ctx.lineTo(50, 50);
         ctx.lineTo(-50, 50);
         ctx.fill();
-        ctx.beginPath()
-        ctx.moveTo(-50, -50);
-        ctx.lineTo(-10, 10);
-        ctx.lineTo(50, 50);
-        ctx.stroke();
+        for (let i = 0; i < 2; i++) {
+          ctx.beginPath()
+          ctx.moveTo(-50, -50);
+          ctx.lineTo(-10, 10);
+          ctx.lineTo(50, 50);
+          ctx.stroke();
+          ctx.setLineDash([3, 3])
+          ctx.lineWidth = 8;
+        }
+        ctx.setLineDash([])
+        ctx.lineWidth = 5;
       } else {
         // Handle single castle
         if (
@@ -213,27 +245,40 @@ export const getImageDataUrl = (piece: Piece) => {
             ctx.lineTo(50, -50);
             ctx.fill();
 
-            ctx.beginPath()
-            ctx.moveTo(-50, -50);
-            ctx.lineTo(-20, -20);
-            ctx.lineTo(-20, 20);
-            ctx.lineTo(-50, 50);
-            ctx.stroke()
+            for (let i = 0; i < 2; i++) {
+              ctx.beginPath()
+              ctx.moveTo(-50, -50);
+              ctx.lineTo(-20, -20);
+              ctx.lineTo(-20, 20);
+              ctx.lineTo(-50, 50);
+              ctx.stroke()
 
-            ctx.beginPath()
-            ctx.lineTo(50, 50);
-            ctx.lineTo(20, 20);
-            ctx.lineTo(20, -20);
-            ctx.lineTo(50, -50);
-            ctx.stroke()
+              ctx.beginPath()
+              ctx.lineTo(50, 50);
+              ctx.lineTo(20, 20);
+              ctx.lineTo(20, -20);
+              ctx.lineTo(50, -50);
+              ctx.stroke()
+              ctx.setLineDash([3, 3])
+              ctx.lineWidth = 8;
+            }
+            ctx.setLineDash([])
+            ctx.lineWidth = 5;
           }
         } else {
           // Regular 1 sided castle
-          ctx.lineWidth = 5;
           ctx.beginPath();
           ctx.arc(0, 85, 60, 0, 2 * Math.PI);
           ctx.fill();
-          ctx.stroke();
+          for (let i = 0; i < 2; i++) {
+            ctx.beginPath();
+            ctx.arc(0, 85, 60, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.setLineDash([3, 3])
+            ctx.lineWidth = 8;
+          }
+          ctx.setLineDash([])
+          ctx.lineWidth = 5;
         }
       }
     }
