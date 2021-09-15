@@ -1,6 +1,6 @@
 import React from "react";
 import './BaseGame.scss'
-import {GameMap} from "../game/GameMap";
+import {GameMap, IPiecePos} from "../game/GameMap";
 import {pieces} from "../game/defaultPieces";
 import {MapDisplay} from "./MapDisplay";
 import {getImageDataUrl, getRandomPiece} from "../utils";
@@ -9,9 +9,10 @@ import {Piece} from "../game/Piece";
 interface IBaseGameProps {
   map: GameMap
   onSetPiece: (x: number, y: number, piece: Piece) => void
+  onSetCharacter: (x: number, y: number, iPiecePos: IPiecePos) => void
 }
 
-export const BaseGame = ({map, onSetPiece}: IBaseGameProps) => {
+export const BaseGame = ({map, onSetPiece, onSetCharacter}: IBaseGameProps) => {
   const [zoomLevel, setZoomLevel] = React.useState(100)
   const [nextPiece, setNextPiece] = React.useState(getRandomPiece())
   const [nextPieceRotation, setNextPieceRotation] = React.useState(0)
@@ -23,28 +24,33 @@ export const BaseGame = ({map, onSetPiece}: IBaseGameProps) => {
         placeablePiece={nextPiece.getRotated(nextPieceRotation)}
         map={map}
         // onClickMap={onClickMap}
-        onClickMap={(x, y) => {
-          let rotatedPiece = nextPiece.getRotated(nextPieceRotation)
-          let wasOk = false
-          if (!map.pieceOkHere(x, y, rotatedPiece)) {
-            for (let i = 0; i < 3; i++) {
-              rotatedPiece = rotatedPiece.getRotated(1)
-              if (map.pieceOkHere(x, y, rotatedPiece)) {
-                wasOk = true
-                break
+        onClickMap={(x, y, pos) => {
+          if (!pos) {
+            let rotatedPiece = nextPiece.getRotated(nextPieceRotation)
+            let wasOk = false
+            if (!map.pieceOkHere(x, y, rotatedPiece)) {
+              for (let i = 0; i < 3; i++) {
+                rotatedPiece = rotatedPiece.getRotated(1)
+                if (map.pieceOkHere(x, y, rotatedPiece)) {
+                  wasOk = true
+                  break
+                }
               }
+            } else {
+              wasOk = true
             }
+            if (!wasOk) {
+              return
+            }
+            onSetPiece(x, y, rotatedPiece)
+            
+            // let newMap = map.clone()
+            // newMap.setPiece(x, y, rotatedPiece)
+            // setMap(newMap)
+            setNextPiece(getRandomPiece())
           } else {
-            wasOk = true
+            onSetCharacter(x, y, pos)
           }
-          if (!wasOk) {
-            return
-          }
-          onSetPiece(x, y, rotatedPiece)
-          // let newMap = map.clone()
-          // newMap.setPiece(x, y, rotatedPiece)
-          // setMap(newMap)
-          setNextPiece(getRandomPiece())
         }}
       />
     </div>

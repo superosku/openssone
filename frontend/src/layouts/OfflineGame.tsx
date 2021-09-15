@@ -20,6 +20,11 @@ export const OfflineGame = () => {
         newMap.setPiece(x, y, piece)
         setMap(newMap)
       }}
+      onSetCharacter={(x, y, iPiecePos) => {
+        let newMap = map.clone()
+        newMap.setCharacter(x, y, iPiecePos, 1)
+        setMap(newMap)
+      }}
     />
   </>
 }
