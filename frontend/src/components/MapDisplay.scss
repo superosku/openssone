@@ -116,15 +116,15 @@
 
       .character {
         position: absolute;
-        width: 20px;
-        height: 20px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         z-index: 10;
-        margin: -12px;
+        margin: -15px;
 
         &.character-team-1 {
-          border: 2px solid #a00505;
-          background-color: #f31010;
+          color: #db1f1f;
+          filter: drop-shadow(0px 0px 3px black)
         }
         &.character-team-2 {
           border: 2px solid #6705a0;
