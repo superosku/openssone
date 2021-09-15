@@ -19,8 +19,10 @@ export const getImageDataUrl = (piece: Piece) => {
   const colorRoad = '#b1aaa1'
   const colorCastle = '#7a5233'
   const colorCastleBoarder = '#6b482d'
-  const colorCastleBoarderHilight = '#4c321f'
-  const colorWater = '#2358a7'
+  const colorCoastal = '#ffde5f'
+  const colorWater = '#3178e3'
+  const colorWaterDeep = '#2457a2'
+  // const colorWaterDeepset = '#1e5099'
   const colorMonastery = '#96582f'
   const colorMonasteryBorder = '#704122'
   const colorGround = '#459926'
@@ -51,7 +53,7 @@ export const getImageDataUrl = (piece: Piece) => {
   ctx.strokeRect(0, 0, 100, 100)
 
   ctx.lineWidth = 2;
-  for (let i = 0; i < 500; i ++) {
+  for (let i = 0; i < 500; i++) {
     const x = Math.round(Math.random() * 100)
     const y = Math.round(Math.random() * 100)
     const length = Math.round(Math.random() * 5 + 3)
@@ -74,94 +76,103 @@ export const getImageDataUrl = (piece: Piece) => {
 
     // Roads and rivers
     if (sideType === PieceSideType.road || sideType === PieceSideType.river) {
+      const colorsAndWidths: [string, number][] = sideType === PieceSideType.river ? [
+        [colorCoastal, 17],
+        [colorWater, 13],
+        [colorWaterDeep, 8],
+        // [colorWaterDeepset, 6],
+      ] : [
+        [colorRoad, 5]
+      ]
 
-      if (sideType === PieceSideType.river) {
-        ctx.strokeStyle = colorWater
-        ctx.lineWidth = 15;
-      } else {
-        ctx.strokeStyle = colorRoad
-        ctx.lineWidth = 5;
-      }
+      for (let j = 0; j < colorsAndWidths.length; j++) {
+        const [color, width] = colorsAndWidths[j]
 
-      const canArch = (
-        !(piece.extraInfo === PieceExtraInfo.monastery)
-      )
-      if (
-        canArch &&
-        sideType === piece.sideTypes[(i + 4 - 1) % 4] &&
-        sideType !== piece.sideTypes[(i + 1) % 4] &&
-        sideType !== piece.sideTypes[(i + 4 - 2) % 4]
-      ) {
-        // Do not draw corners twice
-      } else if (
-        canArch &&
-        sideType === piece.sideTypes[(i + 1) % 4] &&
-        sideType !== piece.sideTypes[(i + 2) % 4] &&
-        sideType !== piece.sideTypes[(i + 3) % 4]
-      ) {
-        // Corners
-        ctx.beginPath();
-        ctx.arc(-50, 50, 50, 0, 2 * Math.PI);
-        ctx.stroke();
-      } else {
+        ctx.strokeStyle = color
+        ctx.lineWidth = width
+
+        const canArch = (
+          !(piece.extraInfo === PieceExtraInfo.monastery)
+        )
         if (
-          sideType === PieceSideType.river && (
-            piece.sideTypes.some(s => s === PieceSideType.road) ||
-            piece.extraInfo === PieceExtraInfo.monastery
-          )
+          canArch &&
+          sideType === piece.sideTypes[(i + 4 - 1) % 4] &&
+          sideType !== piece.sideTypes[(i + 1) % 4] &&
+          sideType !== piece.sideTypes[(i + 4 - 2) % 4]
         ) {
-          // Water should bend to avoid roads or monastery
-          const thing = Math.floor(i / 2) % 2 === 0 ? 15 : -15; // Needed to make water go around on the same side on both directions
-
+          // Do not draw corners twice
+        } else if (
+          canArch &&
+          sideType === piece.sideTypes[(i + 1) % 4] &&
+          sideType !== piece.sideTypes[(i + 2) % 4] &&
+          sideType !== piece.sideTypes[(i + 3) % 4]
+        ) {
+          // Corners
           ctx.beginPath();
-          ctx.moveTo(thing, 0);
-          ctx.lineTo(thing, 15);
-          ctx.lineTo(0, 30);
-          ctx.lineTo(0, 50);
+          ctx.arc(-50, 50, 50, 0, 2 * Math.PI);
           ctx.stroke();
         } else {
-          // Regular stuff
-          let dist = 0
-          if (piece.extraInfo === PieceExtraInfo.oppositeCastleFull) {
-            dist = 22
+          if (
+            sideType === PieceSideType.river && (
+              piece.sideTypes.some(s => s === PieceSideType.road) ||
+              piece.extraInfo === PieceExtraInfo.monastery
+            )
+          ) {
+            // Water should bend to avoid roads or monastery
+            const thing = Math.floor(i / 2) % 2 === 0 ? 15 : -15; // Needed to make water go around on the same side on both directions
+
+            ctx.beginPath();
+            ctx.moveTo(thing, 0);
+            ctx.lineTo(thing, 15);
+            ctx.lineTo(0, 30);
+            ctx.lineTo(0, 50);
+            ctx.stroke();
+          } else {
+            // Regular stuff
+            let dist = 0
+            if (piece.extraInfo === PieceExtraInfo.oppositeCastleFull) {
+              dist = 22
+            }
+            if (piece.sideTypes[(i + 2) % 4] === PieceSideType.castle) {
+              dist = -13
+            }
+            ctx.beginPath();
+            ctx.moveTo(0, dist);
+            ctx.lineTo(0, 50);
+            ctx.stroke();
           }
-          if (piece.sideTypes[(i + 2) % 4] === PieceSideType.castle) {
-            dist = -13
-          }
+        }
+
+        // Draw villages and river endings
+        const roadOrRiverCount = piece.sideTypes.reduce((a: number, s) => a + (s === sideType ? 1 : 0), 0)
+        if (roadOrRiverCount === 1 && sideType === PieceSideType.river) {
+          ctx.strokeStyle = color
+          ctx.fillStyle = color
+          ctx.lineWidth = width
+
           ctx.beginPath();
-          ctx.moveTo(0, dist);
-          ctx.lineTo(0, 50);
+          ctx.arc(0, 0, 10, 0, 2 * Math.PI);
+          ctx.fill();
           ctx.stroke();
         }
-      }
+        if (
+          roadOrRiverCount !== 2 &&
+          sideType === PieceSideType.road &&
+          !(piece.extraInfo === PieceExtraInfo.oppositeCastleFull) &&
+          !(piece.sideTypes[(i + 2) % 4] === PieceSideType.castle)
+        ) {
+          ctx.strokeStyle = color
+          ctx.fillStyle = color
+          ctx.lineWidth = width
 
-      // Draw villages and river endings
-      const roadOrRiverCount = piece.sideTypes.reduce((a: number, s) => a + (s === sideType ? 1 : 0), 0)
-      if (roadOrRiverCount === 1 && sideType === PieceSideType.river) {
-        ctx.strokeStyle = colorWater
-        ctx.fillStyle = colorWater
-
-        ctx.beginPath();
-        ctx.arc(0, 0, 10, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
-      }
-      if (
-        roadOrRiverCount !== 2 &&
-        sideType === PieceSideType.road &&
-        !(piece.extraInfo === PieceExtraInfo.oppositeCastleFull) &&
-        !(piece.sideTypes[(i + 2) % 4] === PieceSideType.castle)
-      ) {
-        ctx.strokeStyle = colorRoad
-        ctx.fillStyle = colorRoad
-
-        ctx.beginPath();
-        ctx.moveTo(-10, -10);
-        ctx.lineTo(10, -10);
-        ctx.lineTo(10, 10);
-        ctx.lineTo(-10, 10);
-        ctx.lineTo(-10, -10);
-        ctx.fill()
+          ctx.beginPath();
+          ctx.moveTo(-10, -10);
+          ctx.lineTo(10, -10);
+          ctx.lineTo(10, 10);
+          ctx.lineTo(-10, 10);
+          ctx.lineTo(-10, -10);
+          ctx.fill()
+        }
       }
     }
 
