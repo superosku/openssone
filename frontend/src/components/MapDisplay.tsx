@@ -3,6 +3,7 @@ import './MapDisplay.scss';
 import {GameMap, IOctant, IQuadrant, ICharacter, IPiecePos} from "../game/GameMap";
 import {Piece, PieceExtraInfo, PieceSideType} from "../game/Piece";
 import {FaCheck} from 'react-icons/fa';
+import {GiMeeple} from 'react-icons/gi';
 import {getImageDataUrl, getRange} from "../utils";
 
 interface IMapDisplayProps {
@@ -186,10 +187,10 @@ export const MapDisplay = (
                   if (q.iPiecePos.middle) {className = ('middle')}
                   if (q.iPiecePos.octant !== undefined) {className = ('octant-' + q.iPiecePos.octant)}
                   if (q.iPiecePos.quadrant !== undefined) {className = ('quadrant-' + q.iPiecePos.quadrant)}
-                  return <span
+                  return <GiMeeple
                     className={'character ' + className + ' character-team-' + q.team}
                     key={(q.iPiecePos.middle + '|' + q.iPiecePos.octant + '|' + q.iPiecePos.quadrant)}
-                  ></span>
+                  ></GiMeeple>
                 })}
               </>
               }
