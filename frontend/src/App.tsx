@@ -1,7 +1,5 @@
 import React from 'react';
 import './App.scss';
-import {pieces} from "./game/defaultPieces";
-import {GameMap} from "./game/GameMap";
 import {getImageDataUrl} from "./utils";
 import {MapDisplay} from "./components/MapDisplay";
 import {MainMenu} from './components/MainMenu'
@@ -14,6 +12,8 @@ import {
 } from "react-router-dom";
 import {OnlineGame} from "./layouts/OnlineGame";
 import {OfflineGame} from "./layouts/OfflineGame";
+import {GameMap} from "common"
+import {pieces} from "common"
 
 const GeneratedMap = () => {
   const [map, setMap] = React.useState(new GameMap())

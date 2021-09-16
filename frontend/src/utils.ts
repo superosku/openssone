@@ -1,6 +1,6 @@
-import {Piece, PieceExtraInfo, PieceSideType} from "./game/Piece";
+import {Piece, PieceExtraInfo, PieceSideType} from "common/src/Piece";
 import axios from "axios";
-import {pieces} from "./game/defaultPieces";
+import {pieces} from "common/src/defaultPieces";
 
 export const axiosInstance = axios.create({
   baseURL: 'http://localhost:8888',

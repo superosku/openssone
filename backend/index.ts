@@ -9,6 +9,7 @@ const express = require('express');
 import {Request, Response, NextFunction} from 'express'
 import * as ws from 'ws';
 import {RedisClient} from "redis";
+import {IGameInfo, IGameState, IPieceHolder, IPlayer} from "common";
 
 const app = express();
 const expressWs = require('express-ws')(app);
@@ -57,35 +58,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello GET');
 })
 
-interface IPlayer {
-  name: string,
-  id: string,
-  joinSlug: string,
-  lastPing: Date,
-}
-
-interface IPiece {
-  sideTypes: [number, number, number, number],
-  extraInfo: number,
-  sideConnections: [number, number, number, number, number, number, number, number],
-  roadConnections: [number, number, number, number],
-}
-
-interface IPieceHolder {
-  piece: IPiece,
-  playerId: string,
-  x: number,
-  y: number,
-}
-
-interface IGame {
-  _id?: ObjectId,
-  createdAt: Date,
-  joinSlug: string,
-  players: IPlayer[],
-  pieceHolders: IPieceHolder[],
-  turn: string,
-  status: 'created' | 'started' | 'done'
+interface IMongoGameState extends IGameState {
+  _id?: ObjectId
 }
 
 app.post('/games/new', async (req: Request, res: Response) => {
@@ -97,8 +71,8 @@ app.post('/games/new', async (req: Request, res: Response) => {
     joinSlug: makeId(10),
     lastPing: new Date()
   }
-
-  const game: IGame = {
+  const game: IMongoGameState = {
+    id: '',
     createdAt: new Date(),
     joinSlug: makeId(5, 'abcdefghijklmnopqrstuvwxyz0123456789'),
     players: [player],
@@ -107,20 +81,21 @@ app.post('/games/new', async (req: Request, res: Response) => {
     status: 'created',
   }
   const result = await collection.insertOne(game)
-  game._id = result.insertedId
-  res.send(JSON.stringify({
+  game.id = result.insertedId.toHexString()
+  const gameInfo: IGameInfo = {
     data: game,
     meta: {
       you: player
     }
-  }))
+  }
+  res.send(JSON.stringify(gameInfo))
 })
 
 app.post('/games/join/:joinSlug', async (req: Request, res: Response) => {
   const joinSlug = req.params.joinSlug
 
-  const collection: Collection<IGame> = await req.app.locals.db.collection('games')
-  const game: IGame | null = await collection.findOne({joinSlug})
+  const collection: Collection<IMongoGameState> = await req.app.locals.db.collection('games')
+  const game: IMongoGameState | null = await collection.findOne({joinSlug})
 
   if (!game) {
     res.sendStatus(404);
@@ -164,8 +139,8 @@ app.get('/games', async (req: Request, res: Response) => {
 app.get('/games/:gameId', async (req: Request, res: Response) => {
   const gameId = req.params.gameId
 
-  const collection: Collection<IGame> = await req.app.locals.db.collection('games')
-  const game: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
+  const collection: Collection<IMongoGameState> = await req.app.locals.db.collection('games')
+  const game: IMongoGameState | null = await collection.findOne({_id: new ObjectId(gameId)})
 
   if (!game) {
     res.sendStatus(404);
@@ -190,8 +165,8 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
   const gameId = req.params.gameId
   const channelSlug = 'game-event:' + gameId
 
-  const collection: Collection<IGame> = await req.app.locals.db.collection('games')
-  const origGame: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
+  const collection: Collection<IMongoGameState> = await req.app.locals.db.collection('games')
+  const origGame: IMongoGameState | null = await collection.findOne({_id: new ObjectId(gameId)})
 
   if (!origGame) {
     ws.close(404)
@@ -223,7 +198,7 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
     const data = JSON.parse(msg as string)
     console.log("Web socket received data:", channelSlug, msg)
 
-    const currentGame: IGame | null = await collection.findOne({_id: new ObjectId(gameId)})
+    const currentGame: IMongoGameState | null = await collection.findOne({_id: new ObjectId(gameId)})
 
     if (!currentGame) {
       return
@@ -244,8 +219,9 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
     if (data.type === 'new-piece') {
       const newPieceHolder: IPieceHolder = {...data.data, playerId: currentPlayer.id}
       console.log('newPieceHolder', newPieceHolder)
-      const curPlayerIndex = origGame.players.findIndex((p) => p.id === currentPlayer.id)
-      const nextPlayerId = origGame.players[(curPlayerIndex + 1) % origGame.players.length].id
+      const curPlayerIndex = currentGame.players.findIndex((p) => p.id === currentPlayer.id)
+      const nextPlayerId = currentGame.players[(curPlayerIndex + 1) % origGame.players.length].id
+      console.log('curPlayerIndex', curPlayerIndex, nextPlayerId)
 
       await collection.findOneAndUpdate(
         {_id: currentGame._id},

@@ -2,46 +2,10 @@ import {axiosInstance} from "../utils";
 import React from "react";
 import {useHistory} from "react-router-dom";
 import {Loader} from "../components/Loader";
-
-export interface IResponsePlayer {
-  id: string
-  joinSlug: string
-  name: string
-}
-
-interface IResponsePiece {
-  extraInfo: number
-  roadConnections: [number, number, number, number]
-  sideConnections: [number, number, number, number, number, number, number, number]
-  sideTypes: [number, number, number, number]
-}
-
-export interface IResponsePieceHolder {
-  piece: IResponsePiece
-  x: number
-  y: number
-}
-
-export interface IResponseGame {
-  createdAt: string
-  joinSlug: string
-  pieceHolders: IResponsePieceHolder[]
-  players: IResponsePlayer[]
-  turn: string
-  _id: string
-  status: 'created' | 'started' | 'done'
-}
-
-export interface IGameInfo {
-  data: IResponseGame,
-  meta: {
-    you: IResponsePlayer
-  },
-}
-
+import {IGameInfo, IGameState} from "common";
 
 export const Games = () => {
-  const [games, setGames] = React.useState<IResponseGame[]>([])
+  const [games, setGames] = React.useState<IGameState[]>([])
   const [loading, setLoading] = React.useState(true)
   const history = useHistory();
 
@@ -58,10 +22,11 @@ export const Games = () => {
   return <div>
     <ul>
       {games.map((game) => {
-        return <li key={game._id}>
-          {game._id} -
+        return <li key={game.id}>
+          {game.id} -
           {game.createdAt} -
           {game.joinSlug}
+          {game.status === 'created' &&
           <button
             onClick={async () => {
               const response = await axiosInstance.post('/games/join/' + game.joinSlug)
@@ -70,6 +35,7 @@ export const Games = () => {
               history.push(`/games/${gameId}/${joinSlug}`)
             }}>Join
           </button>
+          }
         </li>
       })}
     </ul>
@@ -82,11 +48,10 @@ export const Games = () => {
           onClick={async () => {
             setLoading(true)
             const response = await axiosInstance.post('/games/new')
-            const gameId = response.data.data._id
-            const joinSlug = response.data.meta.you.joinSlug
+            const responseGame: IGameInfo = response.data
+            const gameId = responseGame.data.id
+            const joinSlug = responseGame.meta.you.joinSlug
             history.push(`/games/${gameId}/${joinSlug}`)
-            // await loadGames()
-            // setLoading(false)
           }}
         >newGame
         </button>

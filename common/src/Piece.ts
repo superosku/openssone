@@ -89,3 +89,10 @@ export class Piece {
     return `${this.sideTypes[0]}-${this.sideTypes[1]}-${this.sideTypes[2]}-${this.sideTypes[3]}-${this.extraInfo}`
   }
 }
+
+export interface IPiece extends Piece {
+  // sideTypes: [number, number, number, number],
+  // extraInfo: number,
+  // sideConnections: [number, number, number, number, number, number, number, number],
+  // roadConnections: [number, number, number, number],
+}

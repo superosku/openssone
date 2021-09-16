@@ -38,65 +38,69 @@
       position: relative;
       cursor: pointer;
 
+      $smaller: 15px;
+      $larger: 30px;
+
       .octant-0 {
-        bottom: 10px;
-        right: 20px;
+        bottom: $smaller;
+        right: $larger;
       }
 
       .octant-1 {
-        bottom: 10px;
-        left: 20px;
+        bottom: $smaller;
+        left: $larger;
       }
 
       .octant-2 {
-        bottom: 20px;
-        left: 10px;
+        bottom: $larger;
+        left: $smaller;
       }
 
       .octant-3 {
-        top: 20px;
-        left: 10px;
+        top: $larger;
+        left: $smaller;
       }
 
       .octant-4 {
-        top: 10px;
-        left: 20px;
+        top: $smaller;
+        left: $larger;
       }
 
       .octant-5 {
-        top: 10px;
-        right: 20px;
+        top: $smaller;
+        right: $larger;
       }
 
       .octant-6 {
-        top: 20px;
-        right: 10px;
+        top: $larger;
+        right: $smaller;
       }
 
       .octant-7 {
-        bottom: 20px;
-        right: 10px;
+        bottom: $larger;
+        right: $smaller;
       }
 
+      $road: 15px;
 
       .quadrant-0 {
-        bottom: 10px;
+        bottom: $road;
         right: 50px;
       }
 
       .quadrant-1 {
         bottom: 50px;
-        left: 10px;
+        left: $road;
       }
 
       .quadrant-2 {
-        top: 10px;
+        top: $road;
         left: 50px;
       }
 
       .quadrant-3 {
         top: 50px;
-        right: 10px;
+        right: $road;
       }
 
       .middle {

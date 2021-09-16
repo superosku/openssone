@@ -2,10 +2,10 @@ import './OnlineGameDisplay.scss'
 import {BaseGame} from "./BaseGame";
 import React from "react";
 import {ILatestPings} from "../layouts/OnlineGame";
-import {GameMap, IPiecePos} from "../game/GameMap";
-import {IGameInfo} from "../layouts/Games";
-import {Piece} from "../game/Piece";
+import {GameMap, IPiecePos} from "common";
 import {PlayerList} from "./PlayerList";
+import {IGameInfo} from "common";
+import {Piece} from "common";
 
 interface IOnlineGameDisplayProps {
   gameInfo: IGameInfo

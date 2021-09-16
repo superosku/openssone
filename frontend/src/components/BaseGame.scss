@@ -3,7 +3,7 @@
     background-color: #e3e3e3;
 
     flex-grow: 1;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .bottom-menu {
@@ -28,17 +28,22 @@
     .rotation-choices {
       display: flex;
       flex-direction: row;
-      //flex-grow: 1;
 
-      div {
-        padding: 5px;
+      .rotation-button {
+        width: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
 
-        &.active {
-          background-color: #7a612d;
+        &:hover svg {
+          color: white;
         }
 
-        img {
-          display: inline-block;
+        svg {
+          height: 40px;
+          width: 40px;
+          color: lightgrey;
         }
       }
     }

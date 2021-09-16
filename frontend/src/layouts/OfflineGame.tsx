@@ -1,7 +1,8 @@
 import {BaseGame} from "../components/BaseGame";
 import React from "react";
-import {GameMap} from "../game/GameMap";
-import {pieces} from "../game/defaultPieces";
+import {GameMap} from "common";
+// import {pieces} from "common/src/defaultPieces";
+import {pieces} from "common";
 
 
 export const OfflineGame = () => {

@@ -1,9 +1,10 @@
 import React from "react";
 import './BaseGame.scss'
-import {GameMap, IPiecePos} from "../game/GameMap";
 import {MapDisplay} from "./MapDisplay";
 import {getImageDataUrl, getRandomPiece} from "../utils";
-import {Piece} from "../game/Piece";
+import {Piece} from "common";
+import {GameMap, IPiecePos} from "common";
+import {FaUndo, FaRedo} from 'react-icons/fa';
 
 interface IBaseGameProps {
   map: GameMap
@@ -22,7 +23,6 @@ export const BaseGame = ({map, onSetPiece, onSetCharacter}: IBaseGameProps) => {
         zoomLevel={zoomLevel}
         placeablePiece={nextPiece.getRotated(nextPieceRotation)}
         map={map}
-        // onClickMap={onClickMap}
         onClickMap={(x, y, pos) => {
           if (!pos) {
             let rotatedPiece = nextPiece.getRotated(nextPieceRotation)
@@ -42,10 +42,7 @@ export const BaseGame = ({map, onSetPiece, onSetCharacter}: IBaseGameProps) => {
               return
             }
             onSetPiece(x, y, rotatedPiece)
-            
-            // let newMap = map.clone()
-            // newMap.setPiece(x, y, rotatedPiece)
-            // setMap(newMap)
+
             setNextPiece(getRandomPiece())
           } else {
             onSetCharacter(x, y, pos)
@@ -73,20 +70,17 @@ export const BaseGame = ({map, onSetPiece, onSetCharacter}: IBaseGameProps) => {
         </button>
       </div>
       <div className={'rotation-choices'}>
-        {[0, 1, 2, 3].map(rotationChoice => {
-          return <div
-            key={rotationChoice}
-            className={nextPieceRotation === rotationChoice ? 'active' : ''}
-          >
-            <img
-              key={rotationChoice}
-              onClick={() => {
-                setNextPieceRotation(rotationChoice)
-              }}
-              src={getImageDataUrl(nextPiece.getRotated(rotationChoice))}
-            />
-          </div>
-        })}
+        <div className={'rotation-button'} onClick={() => {
+          setNextPieceRotation((nextPieceRotation + 1 + 4) % 4)
+        }}>
+          <FaUndo/>
+        </div>
+        <img src={getImageDataUrl(nextPiece.getRotated(nextPieceRotation))}/>
+        <div className={'rotation-button'} onClick={() => {
+          setNextPieceRotation((nextPieceRotation - 1 + 4) % 4)
+        }}>
+          <FaRedo/>
+        </div>
       </div>
     </div>
   </div>

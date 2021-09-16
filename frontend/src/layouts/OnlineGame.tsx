@@ -3,12 +3,12 @@ import './OnlineGame.scss'
 
 import {useParams} from "react-router-dom";
 import {axiosInstance} from "../utils";
-import {IGameInfo, IResponsePieceHolder} from "./Games";
-import {GameMap} from "../game/GameMap";
-import {Piece} from "../game/Piece";
+import {GameMap, IPieceHolder} from "common";
 import {Loader} from "../components/Loader";
 import {GameLobby} from "./GameLobby";
 import {OnlineGameDisplay} from "../components/OnlineGameDisplay";
+import {IGameInfo} from "common";
+import {Piece} from "common";
 
 
 interface IDebugMessage {
@@ -111,7 +111,7 @@ export const OnlineGame = () => {
       if (message.type === 'new-piece') {
         setMap(currentMap => {
           let newMap = currentMap.clone()
-          const pieceHolder: IResponsePieceHolder = message.data
+          const pieceHolder: IPieceHolder = message.data
           newMap.setPiece(
             pieceHolder.x,
             pieceHolder.y,

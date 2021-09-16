@@ -1,8 +1,9 @@
 import {Piece} from "./Piece";
 import {allRotatedPieces} from "./defaultPieces";
 
-interface IPieceHolder {
+export interface IPieceHolder {
   piece: Piece
+  playerId: string,
   x: number
   y: number
 }
@@ -61,7 +62,7 @@ export class GameMap {
   }
 
   setPiece(x: number, y: number, piece: Piece) {
-    this.pieceHolder[`${x}|${y}`] = {x, y, piece}
+    this.pieceHolder[`${x}|${y}`] = {x, y, piece, playerId: ''}
   }
 
   setCharacter(x: number, y: number, iPiecePos: IPiecePos, team: number) {

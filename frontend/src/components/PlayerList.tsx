@@ -1,7 +1,7 @@
 import React from "react";
 import {ILatestPings} from "../layouts/OnlineGame";
-import {IGameInfo} from "../layouts/Games";
-import {FaUserSlash, FaArrowRight} from 'react-icons/fa';
+import {FaUserSlash, FaArrowRight, FaQuestion} from 'react-icons/fa';
+import {IGameInfo} from "common";
 
 interface IPlayerListProps {
   latestPings: ILatestPings
@@ -11,8 +11,9 @@ interface IPlayerListProps {
 export const PlayerList = ({latestPings, gameInfo}: IPlayerListProps) => {
   return <ul className={'players'}>
     {gameInfo.data.players.map((player, i) => {
+      const playerStatusKnown = latestPings[player.id] !== undefined
       const playerOffline = (
-        latestPings[player.id] === undefined ||
+        latestPings[player.id] !== undefined &&
         ((new Date()).getTime() - latestPings[player.id].getTime()) / 1000 > 15
       )
       const isTurn = gameInfo.data.turn === player.id
@@ -29,6 +30,8 @@ export const PlayerList = ({latestPings, gameInfo}: IPlayerListProps) => {
         {isTurn && <FaArrowRight/>}
         <span>{player.name}</span>
         {playerOffline && <FaUserSlash/>}
+        {!playerStatusKnown && <FaQuestion/>}
+        |{player.id}
       </li>
     })}
   </ul>

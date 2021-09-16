@@ -1,10 +1,10 @@
 import React from 'react';
 import './MapDisplay.scss';
-import {GameMap, IOctant, IQuadrant, ICharacter, IPiecePos} from "../game/GameMap";
-import {Piece, PieceExtraInfo, PieceSideType} from "../game/Piece";
+import {GameMap, IOctant, IQuadrant, IPiecePos} from "common";
 import {FaCheck} from 'react-icons/fa';
 import {GiMeeple} from 'react-icons/gi';
 import {getImageDataUrl, getRange} from "../utils";
+import {Piece, PieceExtraInfo, PieceSideType} from "common";
 
 interface IMapDisplayProps {
   map: GameMap

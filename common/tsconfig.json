@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "noLib": false,
+    "declaration": false
+  },
+  "include": [
+    "src/**/*",
+    "index.ts"
+  ]
+}
