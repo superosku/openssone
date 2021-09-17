@@ -1,4 +1,5 @@
-import {IPieceHolder} from "./GameMap"
+import {ICharacter, IPieceHolder} from "./GameMap"
+import {IPiece} from "./Piece";
 
 export interface IPlayer {
   name: string,
@@ -7,14 +8,21 @@ export interface IPlayer {
   lastPing: Date,
 }
 
+export interface ITurnInfo {
+  playerId: string,
+  characterPlaced: boolean,
+  piece: IPiece | undefined
+}
+
 export interface IGameState {
   id: string,
   createdAt: Date,
   joinSlug: string,
   players: IPlayer[],
+  characters: ICharacter[],
   pieceHolders: IPieceHolder[],
-  turn: string,
-  status: 'created' | 'started' | 'done'
+  turn: ITurnInfo | undefined
+  status: 'created' | 'started' | 'done',
 }
 
 export interface IGameInfo {

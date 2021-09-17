@@ -1,15 +1,16 @@
 import {BaseGame} from "../components/BaseGame";
 import React from "react";
-import {GameMap} from "common";
+import {GameMap, getRandomPiece} from "common";
 // import {pieces} from "common/src/defaultPieces";
-import {pieces} from "common";
+import {allPieces} from "common";
 
 
 export const OfflineGame = () => {
   const [map, setMap] = React.useState(new GameMap())
+  const [nextPiece, setNextPiece] = React.useState(getRandomPiece())
   React.useEffect(() => {
     let newMap = map.clone()
-    newMap.setPiece(0, 0, pieces[0])
+    newMap.setPiece(0, 0, allPieces[0])
     setMap(newMap)
   }, [])
 
@@ -20,12 +21,14 @@ export const OfflineGame = () => {
         let newMap = map.clone()
         newMap.setPiece(x, y, piece)
         setMap(newMap)
+        setNextPiece(getRandomPiece())
       }}
-      onSetCharacter={(x, y, iPiecePos) => {
+      onSetCharacter={(x, y, pos) => {
         let newMap = map.clone()
-        newMap.setCharacter(x, y, iPiecePos, 1)
+        newMap.setCharacter(x, y, pos, '123')
         setMap(newMap)
       }}
+      placeablePiece={nextPiece}
     />
   </>
 }

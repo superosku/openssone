@@ -1,7 +1,7 @@
 import {Piece, PieceExtraInfo, PieceSideType} from "./Piece";
 
 
-export const pieces = [
+export const defaultPieces = [
   new Piece(
     [PieceSideType.empty, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     undefined,
@@ -104,6 +104,10 @@ export const pieces = [
     [1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0]
   ),
+]
+
+
+export const riverPieces = [
   new Piece(
     [PieceSideType.river, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty,],
     undefined,
@@ -150,7 +154,9 @@ export const pieces = [
   ),
 ]
 
-export const allRotatedPieces = pieces.reduce((a: Piece[], piece) => {
+export const allPieces: Piece[] = [...defaultPieces, ...riverPieces]
+
+export const allRotatedPieces = allPieces.reduce((a: Piece[], piece) => {
   return [
     ...a,
     piece,
@@ -159,3 +165,7 @@ export const allRotatedPieces = pieces.reduce((a: Piece[], piece) => {
     piece.getRotated(3),
   ]
 }, [])
+
+export function getRandomPiece() {
+  return allPieces[Math.floor(Math.random() * allPieces.length)]
+}

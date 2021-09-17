@@ -2,24 +2,27 @@
 .online-game {
   position: relative;
 
-  .players-container {
-  }
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
 
-  .debug-messages {
-    position: absolute;
+    background-color: #b88b6c;
     z-index: 10;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
-    background-color: rgba(255, 255, 255, 0.5);
-    padding: 20px;
-    border-radius: 10px;
 
-    ul {
-      padding: 0;
-      margin: 0;
-      li {
-        list-style-type: none;
+    button {
+      border: 1px solid #5b361e;
+      background-color: #73513a;
+      padding: 15px 50px;
+      color: white;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #d4a280;
+        color: #5b361e;
       }
     }
   }

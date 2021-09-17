@@ -25,8 +25,7 @@ export const MapDisplay = (
   const [debugRoads, setDebugRoads] = React.useState<IQuadrant[]>([])
 
   const mapRange = React.useMemo(() => map.getRange(), [map])
-  const padAmount = placeablePiece ? 1 : 0
-
+  const padAmount = 1
 
   const getClickedPosition = (clickX: number, clickY: number, piece: Piece) => {
 
@@ -184,12 +183,12 @@ export const MapDisplay = (
                 })}
                 {map.getAllCharacters().filter(q => q.x === x && q.y === y).map(q => {
                   let className
-                  if (q.iPiecePos.middle) {className = ('middle')}
-                  if (q.iPiecePos.octant !== undefined) {className = ('octant-' + q.iPiecePos.octant)}
-                  if (q.iPiecePos.quadrant !== undefined) {className = ('quadrant-' + q.iPiecePos.quadrant)}
+                  if (q.pos.middle) {className = ('middle')}
+                  if (q.pos.octant !== undefined) {className = ('octant-' + q.pos.octant)}
+                  if (q.pos.quadrant !== undefined) {className = ('quadrant-' + q.pos.quadrant)}
                   return <GiMeeple
-                    className={'character ' + className + ' character-team-' + q.team}
-                    key={(q.iPiecePos.middle + '|' + q.iPiecePos.octant + '|' + q.iPiecePos.quadrant)}
+                    className={'character ' + className + ' player-' + map.getPlayerIndex(q.playerId)}
+                    key={(q.pos.middle + '|' + q.pos.octant + '|' + q.pos.quadrant)}
                   ></GiMeeple>
                 })}
               </>

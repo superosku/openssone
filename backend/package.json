@@ -24,6 +24,7 @@
     "express-ws": "^5.0.2",
     "mongodb": "^4.1.1",
     "redis": "^3.1.2",
-    "common": "file:../common"
+    "common": "file:../common",
+    "@types/common": "file:../common"
   }
 }

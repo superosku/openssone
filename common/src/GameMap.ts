@@ -1,5 +1,6 @@
-import {Piece} from "./Piece";
+import {Piece, PieceSideType} from "./Piece";
 import {allRotatedPieces} from "./defaultPieces";
+import {IPlayer} from "./game";
 
 export interface IPieceHolder {
   piece: Piece
@@ -23,8 +24,8 @@ export interface IQuadrant {
 export interface ICharacter {
   x: number
   y: number
-  iPiecePos: IPiecePos
-  team: number
+  pos: IPiecePos
+  playerId: string
 }
 
 export interface IPiecePos {
@@ -36,10 +37,17 @@ export interface IPiecePos {
 export class GameMap {
   pieceHolder: { [key: string]: IPieceHolder }
   characterHolder: { [key: string]: ICharacter }
+  players: IPlayer[]
 
   constructor() {
     this.pieceHolder = {}
     this.characterHolder = {}
+    this.players = []
+  }
+
+  getPlayerIndex(playerId: string) {
+    const index = this.players.findIndex(p => p.id === playerId)
+    return index
   }
 
   clone() {
@@ -65,9 +73,9 @@ export class GameMap {
     this.pieceHolder[`${x}|${y}`] = {x, y, piece, playerId: ''}
   }
 
-  setCharacter(x: number, y: number, iPiecePos: IPiecePos, team: number) {
-    const key = (`${x}|${y}|${iPiecePos.middle}|${iPiecePos.quadrant}|${iPiecePos.octant}`)
-    this.characterHolder[key] = {x, y, iPiecePos, team}
+  setCharacter(x: number, y: number, pos: IPiecePos, playerId: string) {
+    const key = (`${x}|${y}|${pos.middle}|${pos.quadrant}|${pos.octant}`)
+    this.characterHolder[key] = {x, y, pos, playerId}
   }
 
   randomize(width: number, height: number) {
@@ -107,7 +115,6 @@ export class GameMap {
     if (!left && !right && !top && !bottom && !isFirstPiece) {
       return false
     }
-
     if (left && left.piece.getRight() !== piece.getLeft()) {
       return false
     }
@@ -118,6 +125,35 @@ export class GameMap {
       return false
     }
     if (top && top.piece.getBottom() !== piece.getTop()) {
+      return false
+    }
+
+    // River pieces cant form u turn. That is solved so that the empty
+    // river part must be on bottom or left
+    if (piece.sideTypes.some(s => s === PieceSideType.river)) {
+      const riverSideCount = piece.sideTypes.reduce(
+        (a, i) => a + (i === PieceSideType.river ? 1 : 0), 0
+      )
+
+      // Must touch previous river
+      if (
+        (bottom && piece.sideTypes[0] !== PieceSideType.river) ||
+        (left && piece.sideTypes[1] !== PieceSideType.river) ||
+        (top && piece.sideTypes[2] !== PieceSideType.river) ||
+        (right && piece.sideTypes[3] !== PieceSideType.river)
+      ) {
+        return false
+      }
+      // Bottom or right is empty (to avoid u turns)
+      if (!bottom && piece.sideTypes[0] === PieceSideType.river) {
+        return true
+      } else if (!right && piece.sideTypes[3] === PieceSideType.river) {
+        return true
+      }
+      if (riverSideCount === 1 && (left !== undefined || top !== undefined)) {
+        // Last river piece must still be placeable
+        return true
+      }
       return false
     }
 
@@ -255,8 +291,6 @@ export class GameMap {
     return visited
   }
 
-
-
   getAllCharacters() {
     let allCharacters: ICharacter[] = [];
 
@@ -265,5 +299,4 @@ export class GameMap {
     }
     return allCharacters
   }
-
 }

@@ -9,7 +9,8 @@ const express = require('express');
 import {Request, Response, NextFunction} from 'express'
 import * as ws from 'ws';
 import {RedisClient} from "redis";
-import {IGameInfo, IGameState, IPieceHolder, IPlayer} from "common";
+import {IGameInfo, IGameState, IPieceHolder, IPlayer, ICharacter, ITurnInfo} from "common";
+import {getNextGamePiece} from "common/dist/utils";
 
 const app = express();
 const expressWs = require('express-ws')(app);
@@ -76,8 +77,9 @@ app.post('/games/new', async (req: Request, res: Response) => {
     createdAt: new Date(),
     joinSlug: makeId(5, 'abcdefghijklmnopqrstuvwxyz0123456789'),
     players: [player],
-    turn: player.id,
+    turn: undefined,
     pieceHolders: [],
+    characters: [],
     status: 'created',
   }
   const result = await collection.insertOne(game)
@@ -132,8 +134,9 @@ app.post('/games/join/:joinSlug', async (req: Request, res: Response) => {
 
 app.get('/games', async (req: Request, res: Response) => {
   const collection = await req.app.locals.db.collection('games')
-  const games = await collection.find().toArray()
-  res.send(JSON.stringify(games))
+  const games: IMongoGameState[] = await collection.find().toArray()
+  const gamesWithId = games.map(g => {return {...g, id: g._id}})
+  res.send(JSON.stringify(gamesWithId))
 })
 
 app.get('/games/:gameId', async (req: Request, res: Response) => {
@@ -205,34 +208,82 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
     }
 
     if (data.type === 'start-game') {
+      // const nextPiece = getRandomPiece()
+      const nextPiece = getNextGamePiece(currentGame)
+      const turnData: ITurnInfo = {
+        playerId: currentGame.players[0].id,
+        piece: nextPiece,
+        characterPlaced: false,
+      }
       await collection.findOneAndUpdate(
         {_id: currentGame._id},
         {
           $set: {
-            status: 'started'
+            status: 'started',
+            turn: turnData
+          }
+        }
+      )
+      await publish(channelSlug, JSON.stringify({
+        type: 'set-turn',
+        data: turnData,
+      }))
+    }
+
+    // Place new piece to mongo
+    if (data.type === 'piece-placed') {
+      const newPieceHolder: IPieceHolder = {...data.data, playerId: currentPlayer.id}
+      const newTurnInfo: ITurnInfo = {...currentGame.turn!, piece: undefined}
+
+      await collection.findOneAndUpdate(
+        {_id: currentGame._id},
+        {
+          $set: {
+            pieceHolders: [...currentGame.pieceHolders, newPieceHolder],
+            turn: newTurnInfo
           }
         }
       )
     }
 
-    // Place new piece to mongo
-    if (data.type === 'new-piece') {
-      const newPieceHolder: IPieceHolder = {...data.data, playerId: currentPlayer.id}
-      console.log('newPieceHolder', newPieceHolder)
-      const curPlayerIndex = currentGame.players.findIndex((p) => p.id === currentPlayer.id)
-      const nextPlayerId = currentGame.players[(curPlayerIndex + 1) % origGame.players.length].id
-      console.log('curPlayerIndex', curPlayerIndex, nextPlayerId)
+    // Place new character
+    if (data.type === 'character-placed') {
+      const newCharacter: ICharacter = {...data.data, playerId: currentPlayer.id}
+      const newTurnInfo: ITurnInfo = {...currentGame.turn!, characterPlaced: true}
 
       await collection.findOneAndUpdate(
         {_id: currentGame._id},
         {
           $set: {
-            turn: nextPlayerId,
-            pieceHolders: [...currentGame.pieceHolders, newPieceHolder]
+            characters: [...currentGame.characters, newCharacter],
+            turn: newTurnInfo
           }
         }
       )
-      await publish(channelSlug, JSON.stringify({type: 'set-turn', data: {playerId: nextPlayerId}}))
+    }
+
+    // End turn
+    if (data.type === 'end-turn') {
+      const curPlayerIndex = currentGame.players.findIndex((p) => p.id === currentPlayer.id)
+      const nextPlayerId = currentGame.players[(curPlayerIndex + 1) % currentGame.players.length].id
+      const newTurnInfo: ITurnInfo = {
+        playerId: nextPlayerId,
+        piece: getNextGamePiece(currentGame),
+        characterPlaced: false,
+      }
+
+      await collection.findOneAndUpdate(
+        {_id: currentGame._id},
+        {
+          $set: {
+            turn: newTurnInfo
+          }
+        }
+      )
+      await publish(channelSlug, JSON.stringify({
+        type: 'set-turn',
+        data: newTurnInfo
+      }))
     }
 
     // Publish to redis

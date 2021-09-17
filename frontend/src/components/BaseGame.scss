@@ -7,44 +7,42 @@
   }
 
   .bottom-menu {
-    position: relative;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+  }
 
-    height: 110px;
+  .rotation-choices {
+    position: absolute;
+    z-index: 5;
+
+    bottom: 0;
+    left: 50%;
+    margin-left: -151px;
+    padding-bottom: 60px;
 
     display: flex;
     flex-direction: row;
-    justify-content: center;
-    background-color: #c49b48;
+    border-top-right-radius: 50px;
+    border-top-left-radius: 50px;
+    background-color: #b88b6c;
 
-    .buttons {
-      top: 0;
-      left: 0;
-      position: absolute;
+    .rotation-button {
+      width: 100px;
       display: flex;
-      flex-direction: column;
-      //flex-grow: 1;
-    }
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
 
-    .rotation-choices {
-      display: flex;
-      flex-direction: row;
+      &:hover svg {
+        color: white;
+      }
 
-      .rotation-button {
-        width: 100px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-
-        &:hover svg {
-          color: white;
-        }
-
-        svg {
-          height: 40px;
-          width: 40px;
-          color: lightgrey;
-        }
+      svg {
+        height: 40px;
+        width: 40px;
+        color: lightgrey;
       }
     }
   }

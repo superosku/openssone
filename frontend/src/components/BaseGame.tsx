@@ -1,7 +1,7 @@
 import React from "react";
 import './BaseGame.scss'
 import {MapDisplay} from "./MapDisplay";
-import {getImageDataUrl, getRandomPiece} from "../utils";
+import {getImageDataUrl} from "../utils";
 import {Piece} from "common";
 import {GameMap, IPiecePos} from "common";
 import {FaUndo, FaRedo} from 'react-icons/fa';
@@ -9,23 +9,34 @@ import {FaUndo, FaRedo} from 'react-icons/fa';
 interface IBaseGameProps {
   map: GameMap
   onSetPiece: (x: number, y: number, piece: Piece) => void
-  onSetCharacter: (x: number, y: number, iPiecePos: IPiecePos) => void
+  onSetCharacter: (x: number, y: number, pos: IPiecePos) => void
+  placeablePiece?: Piece
+  children?: JSX.Element
 }
 
-export const BaseGame = ({map, onSetPiece, onSetCharacter}: IBaseGameProps) => {
+export const BaseGame = (
+  {
+    map,
+    onSetPiece,
+    onSetCharacter,
+    placeablePiece,
+    children
+  }: IBaseGameProps) => {
   const [zoomLevel, setZoomLevel] = React.useState(100)
-  const [nextPiece, setNextPiece] = React.useState(getRandomPiece())
   const [nextPieceRotation, setNextPieceRotation] = React.useState(0)
 
   return <div className={'game main-limited'}>
     <div className={'map-container'}>
       <MapDisplay
         zoomLevel={zoomLevel}
-        placeablePiece={nextPiece.getRotated(nextPieceRotation)}
+        placeablePiece={placeablePiece && placeablePiece.getRotated(nextPieceRotation)}
         map={map}
         onClickMap={(x, y, pos) => {
           if (!pos) {
-            let rotatedPiece = nextPiece.getRotated(nextPieceRotation)
+            if (!placeablePiece) {
+              return
+            }
+            let rotatedPiece = placeablePiece.getRotated(nextPieceRotation)
             let wasOk = false
             if (!map.pieceOkHere(x, y, rotatedPiece)) {
               for (let i = 0; i < 3; i++) {
@@ -42,20 +53,15 @@ export const BaseGame = ({map, onSetPiece, onSetCharacter}: IBaseGameProps) => {
               return
             }
             onSetPiece(x, y, rotatedPiece)
-
-            setNextPiece(getRandomPiece())
           } else {
             onSetCharacter(x, y, pos)
           }
         }}
       />
     </div>
+    {children}
     <div className={'bottom-menu'}>
       <div className={'buttons'}>
-        <button onClick={() => {
-          setNextPiece(getRandomPiece())
-        }}>Random piece
-        </button>
         <button onClick={() => {
           setZoomLevel(100)
         }}>100%
@@ -69,19 +75,21 @@ export const BaseGame = ({map, onSetPiece, onSetCharacter}: IBaseGameProps) => {
         }}>50%
         </button>
       </div>
+    </div>
+      {placeablePiece &&
       <div className={'rotation-choices'}>
         <div className={'rotation-button'} onClick={() => {
           setNextPieceRotation((nextPieceRotation + 1 + 4) % 4)
         }}>
           <FaUndo/>
         </div>
-        <img src={getImageDataUrl(nextPiece.getRotated(nextPieceRotation))}/>
+        <img src={getImageDataUrl(placeablePiece.getRotated(nextPieceRotation))}/>
         <div className={'rotation-button'} onClick={() => {
           setNextPieceRotation((nextPieceRotation - 1 + 4) % 4)
         }}>
           <FaRedo/>
         </div>
-      </div>
-    </div>
+      </div>}
+    {/*</div>*/}
   </div>
 }

@@ -125,15 +125,7 @@
         border-radius: 50%;
         z-index: 10;
         margin: -15px;
-
-        &.character-team-1 {
-          color: #db1f1f;
-          filter: drop-shadow(0px 0px 3px black)
-        }
-        &.character-team-2 {
-          border: 2px solid #6705a0;
-          background-color: #2710f3;
-        }
+        filter: drop-shadow(0px 0px 2px rgba(0, 0, 0, 0.7))
       }
 
       &:hover {

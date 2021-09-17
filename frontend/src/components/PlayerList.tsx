@@ -16,7 +16,7 @@ export const PlayerList = ({latestPings, gameInfo}: IPlayerListProps) => {
         latestPings[player.id] !== undefined &&
         ((new Date()).getTime() - latestPings[player.id].getTime()) / 1000 > 15
       )
-      const isTurn = gameInfo.data.turn === player.id
+      const isTurn = gameInfo.data.turn && gameInfo.data.turn.playerId === player.id
 
       return <li
         key={player.id}

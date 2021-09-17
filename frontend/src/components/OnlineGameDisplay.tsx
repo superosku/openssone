@@ -13,6 +13,8 @@ interface IOnlineGameDisplayProps {
   latestPings: ILatestPings
   onPieceSet: (x: number, y: number, piece: Piece) => void
   onCharacterSet: (x: number, y: number, pos: IPiecePos) => void
+  placeablePiece: Piece | undefined
+  children: JSX.Element
 }
 
 export const OnlineGameDisplay = (
@@ -22,6 +24,8 @@ export const OnlineGameDisplay = (
     latestPings,
     onPieceSet,
     onCharacterSet,
+    placeablePiece,
+    children,
   }: IOnlineGameDisplayProps
 ) => {
 
@@ -30,9 +34,11 @@ export const OnlineGameDisplay = (
       <PlayerList latestPings={latestPings} gameInfo={gameInfo}/>
     </div>
     <BaseGame
+      placeablePiece={placeablePiece}
       map={map}
       onSetPiece={onPieceSet}
       onSetCharacter={onCharacterSet}
+      children={children}
     />
   </>
 }

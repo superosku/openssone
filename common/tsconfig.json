@@ -1,16 +1,19 @@
 {
   "compilerOptions": {
     "target": "es2015",
+    "module": "commonjs",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
     "noLib": false,
-    "declaration": false
+    "declaration": true,
+    "strict": true,
+    "outDir": "./dist"
   },
   "include": [
-    "src/**/*",
+    "src/**/*.ts",
     "index.ts"
   ]
 }

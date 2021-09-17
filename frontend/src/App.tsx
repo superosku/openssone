@@ -13,7 +13,7 @@ import {
 import {OnlineGame} from "./layouts/OnlineGame";
 import {OfflineGame} from "./layouts/OfflineGame";
 import {GameMap} from "common"
-import {pieces} from "common"
+import {allPieces} from "common"
 
 const GeneratedMap = () => {
   const [map, setMap] = React.useState(new GameMap())
@@ -32,7 +32,7 @@ const GeneratedMap = () => {
 const AllPieces = () => {
   return <div className={'main-limited'}>
     <div className="outer">
-      {pieces.map(piece => {
+      {allPieces.map(piece => {
         return <div className={"inner"} key={piece.getHash()}>
           {[0, 1, 2, 3].map(rotation => {
             return <img key={rotation} src={getImageDataUrl(piece.getRotated(rotation))}/>
