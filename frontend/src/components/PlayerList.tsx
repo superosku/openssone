@@ -1,14 +1,22 @@
 import React from "react";
 import {ILatestPings} from "../layouts/OnlineGame";
 import {FaUserSlash, FaArrowRight, FaQuestion} from 'react-icons/fa';
-import {IGameInfo} from "common";
+import {GameMap, IGameInfo} from "common";
+import {GiMeeple} from 'react-icons/gi';
 
 interface IPlayerListProps {
   latestPings: ILatestPings
   gameInfo: IGameInfo
+  map?: GameMap
 }
 
-export const PlayerList = ({latestPings, gameInfo}: IPlayerListProps) => {
+export const PlayerList = (
+  {
+    latestPings,
+    gameInfo,
+    map,
+  }: IPlayerListProps
+) => {
   return <ul className={'players'}>
     {gameInfo.data.players.map((player, i) => {
       const playerStatusKnown = latestPings[player.id] !== undefined
@@ -32,6 +40,7 @@ export const PlayerList = ({latestPings, gameInfo}: IPlayerListProps) => {
         {playerOffline && <FaUserSlash/>}
         {!playerStatusKnown && <FaQuestion/>}
         |{player.id}
+        |<GiMeeple />x{map && map.remainingCharacters(player.id)}
       </li>
     })}
   </ul>

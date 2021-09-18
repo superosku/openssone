@@ -3,13 +3,12 @@ import './OnlineGame.scss'
 
 import {useParams} from "react-router-dom";
 import {axiosInstance} from "../utils";
-import {GameMap, IPieceHolder, ITurnInfo, PieceExtraInfo, PieceSideType} from "common";
+import {GameMap, createGameMap, ITurnInfo, ICharacter, filterCharacters} from "common";
 import {Loader} from "../components/Loader";
 import {GameLobby} from "./GameLobby";
 import {OnlineGameDisplay} from "../components/OnlineGameDisplay";
 import {IGameInfo} from "common";
 import {Piece} from "common";
-import {PlayerList} from "../components/PlayerList";
 import {ToastContext} from "../ToastProvider";
 
 
@@ -56,28 +55,9 @@ export const OnlineGame = () => {
   const map = React.useMemo<GameMap>(() => {
     let newMap = new GameMap()
     if (!gameInfo) {
-      return newMap
+      return new GameMap()
     }
-    const responseGame = gameInfo.data
-    for (let i = 0; i < responseGame.pieceHolders.length; i++) {
-      const pieceHolder = responseGame.pieceHolders[i]
-      newMap.setPiece(
-        pieceHolder.x,
-        pieceHolder.y,
-        new Piece(
-          pieceHolder.piece.sideTypes,
-          pieceHolder.piece.extraInfo,
-          pieceHolder.piece.sideConnections,
-          pieceHolder.piece.roadConnections,
-        )
-      )
-    }
-    for (let i = 0; i < responseGame.characters.length; i++) {
-      const character = responseGame.characters[i]
-      newMap.setCharacter(character.x, character.y, character.pos, character.playerId)
-    }
-    newMap.players = responseGame.players
-    return newMap
+    return createGameMap(gameInfo.data)
   }, [gameInfo])
 
   const fetchGame = async () => {
@@ -184,6 +164,21 @@ export const OnlineGame = () => {
           }
         })
       }
+      if (message.type === 'remove-characters') {
+        const charactersToBeRemoved: ICharacter[] = message.data
+        setGameInfo((cur) => {
+          if (!cur) {
+            return cur
+          }
+          return {
+            ...cur,
+            data: {
+              ...cur.data,
+              characters: filterCharacters(cur.data.characters, charactersToBeRemoved)
+            }
+          }
+        })
+      }
     });
 
     return socket
@@ -259,6 +254,7 @@ export const OnlineGame = () => {
         }
       }}
       onCharacterSet={async (x, y, pos) => {
+        map.charactersToBeRemovedAfterPiece(x, y)
         if (!isYourTurn) {
           addToast('Not your turn.')
           return false
@@ -268,6 +264,10 @@ export const OnlineGame = () => {
             gameInfo.data.turn.characterPlaced
         ) {
           addToast('Only one character per turn can be placed.')
+          return false
+        }
+        if (!(map.remainingCharacters(gameInfo.meta.you.id) > 0)) {
+          addToast('No remaining characters.')
           return false
         }
         addToast('Character placed')

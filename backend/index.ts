@@ -9,7 +9,16 @@ const express = require('express');
 import {Request, Response, NextFunction} from 'express'
 import * as ws from 'ws';
 import {RedisClient} from "redis";
-import {IGameInfo, IGameState, IPieceHolder, IPlayer, ICharacter, ITurnInfo} from "common";
+import {
+  IGameInfo,
+  IGameState,
+  IPieceHolder,
+  IPlayer,
+  ICharacter,
+  ITurnInfo,
+  createGameMap,
+  filterCharacters
+} from "common";
 import {getNextGamePiece} from "common/dist/utils";
 
 const app = express();
@@ -135,7 +144,9 @@ app.post('/games/join/:joinSlug', async (req: Request, res: Response) => {
 app.get('/games', async (req: Request, res: Response) => {
   const collection = await req.app.locals.db.collection('games')
   const games: IMongoGameState[] = await collection.find().toArray()
-  const gamesWithId = games.map(g => {return {...g, id: g._id}})
+  const gamesWithId = games.map(g => {
+    return {...g, id: g._id}
+  })
   res.send(JSON.stringify(gamesWithId))
 })
 
@@ -235,11 +246,28 @@ app.ws('/messages/:gameId', async (ws: ws, req: Request) => {
       const newPieceHolder: IPieceHolder = {...data.data, playerId: currentPlayer.id}
       const newTurnInfo: ITurnInfo = {...currentGame.turn!, piece: undefined}
 
+      // Should characters be removed from the map?
+      let characters = currentGame.characters
+      const newMap = createGameMap({
+        ...currentGame,
+        pieceHolders: [...currentGame.pieceHolders, newPieceHolder]
+      })
+      const charactersToBeRemoved = newMap.charactersToBeRemovedAfterPiece(newPieceHolder.x, newPieceHolder.y)
+      if (charactersToBeRemoved.length > 0) {
+        await publish(channelSlug, JSON.stringify({
+          type: 'remove-characters',
+          data: charactersToBeRemoved,
+        }))
+        // Remove the characters that should be removed
+        characters = filterCharacters(characters, charactersToBeRemoved)
+      }
+
       await collection.findOneAndUpdate(
         {_id: currentGame._id},
         {
           $set: {
             pieceHolders: [...currentGame.pieceHolders, newPieceHolder],
+            characters: characters,
             turn: newTurnInfo
           }
         }

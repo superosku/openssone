@@ -31,7 +31,7 @@ export const OnlineGameDisplay = (
 
   return <>
     <div className={'hovering-players-container'}>
-      <PlayerList latestPings={latestPings} gameInfo={gameInfo}/>
+      <PlayerList latestPings={latestPings} gameInfo={gameInfo} map={map}/>
     </div>
     <BaseGame
       placeablePiece={placeablePiece}

@@ -1,6 +1,9 @@
 import {Piece, PieceSideType} from "./Piece";
 import {allRotatedPieces} from "./defaultPieces";
-import {IPlayer} from "./game";
+import {IGameInfo, IGameState, IPlayer} from "./game";
+
+const maxCharacters = 5
+const octaToOpposite: { [key: number]: number } = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
 
 export interface IPieceHolder {
   piece: Piece
@@ -48,6 +51,111 @@ export class GameMap {
   getPlayerIndex(playerId: string) {
     const index = this.players.findIndex(p => p.id === playerId)
     return index
+  }
+
+  remainingCharacters(playerId: string) {
+    return (
+      maxCharacters -
+      Object
+        .values(this.characterHolder)
+        .filter(c => c.playerId === playerId)
+        .length
+    )
+  }
+
+  canPlaceCharacter(playerId: string, pos: IPiecePos) {
+    // TODO: Check if existing characters block this placement
+    // eg. enemy characters in the same castle/road/field/monastery or
+    // own character in the exactly same position
+    // Also character should not be placeable on finished castle/road/field/monastery
+    return true
+  }
+
+  castleIsReady(points: IOctant[]) {
+    // Castle is ready when all of the points have a matching point
+    // For an example x:0, y:0, octa:0 must have matching point such as
+    // x:0, y:1, octa:5
+    for (let i = 0; i < points.length; i++) {
+      const point = points[i]
+      const side = Math.floor(point.octa / 2)
+      let pointHasMatch = false
+      for (let j = 0; j < points.length; j++) {
+        const otherPoint = points[j]
+        const sideMatches = octaToOpposite[point.octa] === otherPoint.octa
+        if (!sideMatches) {
+          continue
+        }
+        if (side === 0 && point.x === otherPoint.x && point.y + 1 === otherPoint.y) {
+          pointHasMatch = true
+          break
+        }
+        if (side === 1 && point.x - 1 === otherPoint.x && point.y === otherPoint.y) {
+          pointHasMatch = true
+          break
+        }
+        if (side === 2 && point.x === otherPoint.x && point.y - 1 === otherPoint.y) {
+          pointHasMatch = true
+          break
+        }
+        if (side === 3 && point.x + 1 === otherPoint.x && point.y === otherPoint.y) {
+          pointHasMatch = true
+          break
+        }
+      }
+      if (!pointHasMatch) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  charactersToBeRemovedAfterPiece(x: number, y: number) {
+    const pieceHolder = this.getAt(x, y)
+    if (!pieceHolder) {
+      return []
+    }
+    let characters: ICharacter[] = []
+
+    // Castle
+    for (let i = 0; i < 8; i++) {
+      const side = Math.floor(i / 2)
+      if (pieceHolder.piece.sideTypes[side] == PieceSideType.castle) {
+        const castlePoints = this.getCastlePoints(x, y, i)
+        if (this.castleIsReady(castlePoints)) {
+          // console.log('castle is ready')
+          const castleCharacters = this.getAllCharacters().filter(c => {
+            return castlePoints.some(cp => {
+              return (
+                cp.octa === c.pos.octant &&
+                cp.x === c.x &&
+                cp.y === c.y
+              )
+            })
+          })
+          for (let k = 0; k < castleCharacters.length; k ++) {
+            const castleCharacter = castleCharacters[k]
+            if (characters.findIndex(c => {
+              return (
+                castleCharacter.x === c.x &&
+                castleCharacter.y === c.y &&
+                castleCharacter.pos.octant === c.pos.octant
+              )
+            }) === -1) {
+              characters.push(castleCharacter)
+            }
+          }
+        }
+      }
+    }
+
+    // Road
+    // TODO
+
+    // Monastery
+    // TODO
+
+    return characters
   }
 
   clone() {
@@ -213,7 +321,6 @@ export class GameMap {
         }
       }
 
-      const octaToOpposite: { [key: number]: number } = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
       const newOcta = octaToOpposite[current.octa]
 
       if ((Math.floor(current.octa / 2) === 0) && (this.getAt(current.x, current.y + 1))) {
@@ -299,4 +406,48 @@ export class GameMap {
     }
     return allCharacters
   }
+}
+
+export const createGameMap = (gameState: IGameState) => {
+  let newMap = new GameMap()
+  for (let i = 0; i < gameState.pieceHolders.length; i++) {
+    const pieceHolder = gameState.pieceHolders[i]
+    newMap.setPiece(
+      pieceHolder.x,
+      pieceHolder.y,
+      new Piece(
+        pieceHolder.piece.sideTypes,
+        pieceHolder.piece.extraInfo,
+        pieceHolder.piece.sideConnections,
+        pieceHolder.piece.roadConnections,
+      )
+    )
+  }
+  for (let i = 0; i < gameState.characters.length; i++) {
+    const character = gameState.characters[i]
+    newMap.setCharacter(character.x, character.y, character.pos, character.playerId)
+  }
+  newMap.players = gameState.players
+  return newMap
+}
+
+export const filterCharacters = (characters: ICharacter[], charactersToBeRemoved: ICharacter[]) => {
+  const newCharacters = characters.filter(c => {
+    if (charactersToBeRemoved.some(ctr => {
+      if (
+        c.x === ctr.x &&
+        c.y === ctr.y &&
+        c.pos.octant === ctr.pos.octant &&
+        c.pos.quadrant === ctr.pos.quadrant &&
+        c.pos.middle === ctr.pos.middle
+      ) {
+        return true
+      }
+      return false
+    })) {
+      return false
+    }
+    return true
+  })
+  return newCharacters
 }
