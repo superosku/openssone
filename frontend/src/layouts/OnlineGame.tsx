@@ -10,6 +10,7 @@ import {OnlineGameDisplay} from "../components/OnlineGameDisplay";
 import {IGameInfo} from "common";
 import {Piece} from "common";
 import {PlayerList} from "../components/PlayerList";
+import {ToastContext} from "../ToastProvider";
 
 
 interface IDebugMessage {
@@ -29,6 +30,7 @@ export const OnlineGame = () => {
   const [debugMessages, setDebugMessages] = React.useState<IDebugMessage[]>([])
   const [latestPings, setLatestPings] = React.useState<ILatestPings>({})
   const [socket, setSocket] = React.useState<undefined | WebSocket>(undefined)
+  const {addToast} = React.useContext(ToastContext)
 
   const isYourTurn = React.useMemo(
     () => gameInfo &&
@@ -85,7 +87,6 @@ export const OnlineGame = () => {
       }
     )
     const data: IGameInfo = response.data
-    console.log('Setting game info')
     setGameInfo(data)
   }
 
@@ -133,17 +134,17 @@ export const OnlineGame = () => {
         setLatestPings((cur) => {
           let n = {...cur}
           n[message.playerId] = new Date()
-          console.log('ping times', n)
           return n
         })
       }
       if (message.type === 'set-turn') {
-        console.log('SET TURN')
         setGameInfo(cur => {
           if (!cur) {
             return cur
           }
-          console.log('setting turn to ', message.data.playerId)
+          if (cur && message.data.playerId === cur.meta.you.id) {
+            addToast('It is your turn')
+          }
           return {
             ...cur, data: {
               ...cur.data,
@@ -245,6 +246,7 @@ export const OnlineGame = () => {
       latestPings={latestPings}
       placeablePiece={placeablePiece}
       onPieceSet={async (x, y, piece) => {
+        addToast('Piece placed')
         if (socket) {
           socket.send(JSON.stringify({
             type: 'piece-placed',
@@ -257,14 +259,18 @@ export const OnlineGame = () => {
         }
       }}
       onCharacterSet={async (x, y, pos) => {
-        if (
-          !isYourTurn || (
-            gameInfo.data.turn &&
-            gameInfo.data.turn.characterPlaced
-          )
-        ) {
+        if (!isYourTurn) {
+          addToast('Not your turn.')
           return false
         }
+        if (
+            gameInfo.data.turn &&
+            gameInfo.data.turn.characterPlaced
+        ) {
+          addToast('Only one character per turn can be placed.')
+          return false
+        }
+        addToast('Character placed')
         if (socket) {
           socket.send(JSON.stringify({
             type: 'character-placed',
@@ -278,6 +284,7 @@ export const OnlineGame = () => {
         <div className={'controls'}>
           <button
             onClick={() => {
+              addToast('Turn ended.')
               socket.send(JSON.stringify({
                 type: 'end-turn',
                 data: {}

@@ -1,0 +1,21 @@
+
+.toasts {
+  position: fixed;
+  width: 400px;
+  margin-left: -200px;
+  left: 50%;
+  z-index: 30;
+
+  .toast {
+    background-color: #73513a;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+    opacity: 1;
+    transition: opacity 250ms ease-in-out;
+
+    &.hidden {
+      opacity: 0;
+    }
+  }
+}

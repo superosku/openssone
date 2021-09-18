@@ -14,6 +14,7 @@ import {OnlineGame} from "./layouts/OnlineGame";
 import {OfflineGame} from "./layouts/OfflineGame";
 import {GameMap} from "common"
 import {allPieces} from "common"
+import {ToastProvider} from "./ToastProvider";
 
 const GeneratedMap = () => {
   const [map, setMap] = React.useState(new GameMap())
@@ -45,16 +46,18 @@ const AllPieces = () => {
 
 const App = () => {
   return <Router>
-    <div className={'main-container'}>
-      <MainMenu/>
-      <Switch>
-        <Route path={'/'} exact><OfflineGame/></Route>
-        <Route path={'/generated'}><GeneratedMap/></Route>
-        <Route path={'/pieces'}><AllPieces/></Route>
-        <Route path={'/games'} exact><Games /></Route>
-        <Route path={'/games/:gameId/:joinSlug'} exact><OnlineGame /></Route>
-      </Switch>
-    </div>
+    <ToastProvider>
+      <div className={'main-container'}>
+        <MainMenu/>
+        <Switch>
+          <Route path={'/'} exact><OfflineGame/></Route>
+          <Route path={'/generated'}><GeneratedMap/></Route>
+          <Route path={'/pieces'}><AllPieces/></Route>
+          <Route path={'/games'} exact><Games/></Route>
+          <Route path={'/games/:gameId/:joinSlug'} exact><OnlineGame/></Route>
+        </Switch>
+      </div>
+    </ToastProvider>
   </Router>
 }
 

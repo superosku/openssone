@@ -105,13 +105,13 @@ html, body, #root, .main-container {
 }
 
 .players {
+  font-weight: bold;
   li {
     display: flex;
     align-items: center;
   }
   .you {
     text-decoration: underline;
-    font-weight: bold;
   }
   .turn {
   }
@@ -128,7 +128,7 @@ html, body, #root, .main-container {
   color: #ba1414;
 }
 .player-2 {
-  color: #1db81d;
+  color: #229922;
 }
 .player-3 {
   color: #b8b828;
