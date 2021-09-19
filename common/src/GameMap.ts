@@ -1,148 +1,117 @@
 import {Piece, PieceSideType} from "./Piece";
 import {allRotatedPieces} from "./defaultPieces";
-import {IGameInfo, IGameState, IPlayer} from "./game";
+import {IGameState, IPieceHolder, IPiecePos, IPlayer, ICharacter, IOctant, IQuadrant} from "./game";
 
-const maxCharacters = 5
-const octaToOpposite: { [key: number]: number } = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2}
-
-export interface IPieceHolder {
-  piece: Piece
-  playerId: string,
-  x: number
-  y: number
-}
-
-export interface IOctant {
-  x: number
-  y: number
-  octa: number
-}
-
-export interface IQuadrant {
-  x: number
-  y: number
-  road: number
-}
-
-export interface ICharacter {
-  x: number
-  y: number
-  pos: IPiecePos
-  playerId: string
-}
-
-export interface IPiecePos {
-  quadrant: number | undefined
-  octant: number | undefined
-  middle: boolean
-}
+const maxCharacters = 5;
+const octaToOpposite: { [key: number]: number } = {0: 5, 1: 4, 2: 7, 3: 6, 4: 1, 5: 0, 6: 3, 7: 2};
 
 export class GameMap {
-  pieceHolder: { [key: string]: IPieceHolder }
-  characterHolder: { [key: string]: ICharacter }
-  players: IPlayer[]
+  pieceHolder: { [key: string]: IPieceHolder };
+  characterHolder: { [key: string]: ICharacter };
+  players: IPlayer[];
 
   constructor() {
-    this.pieceHolder = {}
-    this.characterHolder = {}
-    this.players = []
+    this.pieceHolder = {};
+    this.characterHolder = {};
+    this.players = [];
   }
 
-  getPlayerIndex(playerId: string) {
-    const index = this.players.findIndex(p => p.id === playerId)
-    return index
+  getPlayerIndex(playerId: string) :number {
+    return this.players
+      .findIndex((player) => player.id === playerId);
   }
 
-  remainingCharacters(playerId: string) {
+  remainingCharacters(playerId: string) : number {
     return (
       maxCharacters -
       Object
         .values(this.characterHolder)
-        .filter(c => c.playerId === playerId)
+        .filter((character) => character.playerId === playerId)
         .length
-    )
+    );
   }
 
-  canPlaceCharacter(playerId: string, pos: IPiecePos) {
+  canPlaceCharacter(playerId: string, pos: IPiecePos) :boolean {
     // TODO: Check if existing characters block this placement
     // eg. enemy characters in the same castle/road/field/monastery or
     // own character in the exactly same position
     // Also character should not be placeable on finished castle/road/field/monastery
-    return true
+    console.log(playerId, pos);
+    return true;
   }
 
-  castleIsReady(points: IOctant[]) {
+  castleIsReady(points: IOctant[]) : boolean {
     // Castle is ready when all of the points have a matching point
     // For an example x:0, y:0, octa:0 must have matching point such as
     // x:0, y:1, octa:5
     for (let i = 0; i < points.length; i++) {
-      const point = points[i]
-      const side = Math.floor(point.octa / 2)
-      let pointHasMatch = false
+      const point = points[i];
+      const side = Math.floor(point.octa / 2);
+      let pointHasMatch = false;
       for (let j = 0; j < points.length; j++) {
-        const otherPoint = points[j]
-        const sideMatches = octaToOpposite[point.octa] === otherPoint.octa
+        const otherPoint = points[j];
+        const sideMatches = octaToOpposite[point.octa] === otherPoint.octa;
         if (!sideMatches) {
-          continue
+          continue;
         }
         if (side === 0 && point.x === otherPoint.x && point.y + 1 === otherPoint.y) {
-          pointHasMatch = true
-          break
+          pointHasMatch = true;
+          break;
         }
         if (side === 1 && point.x - 1 === otherPoint.x && point.y === otherPoint.y) {
-          pointHasMatch = true
-          break
+          pointHasMatch = true;
+          break;
         }
         if (side === 2 && point.x === otherPoint.x && point.y - 1 === otherPoint.y) {
-          pointHasMatch = true
-          break
+          pointHasMatch = true;
+          break;
         }
         if (side === 3 && point.x + 1 === otherPoint.x && point.y === otherPoint.y) {
-          pointHasMatch = true
-          break
+          pointHasMatch = true;
+          break;
         }
       }
       if (!pointHasMatch) {
-        return false
+        return false;
       }
     }
 
-    return true
+    return true;
   }
 
-  charactersToBeRemovedAfterPiece(x: number, y: number) {
-    const pieceHolder = this.getAt(x, y)
+  charactersToBeRemovedAfterPiece(x: number, y: number) : ICharacter[] {
+    const pieceHolder = this.getAt(x, y);
     if (!pieceHolder) {
-      return []
+      return [];
     }
-    let characters: ICharacter[] = []
+    const characters: ICharacter[] = [];
 
     // Castle
     for (let i = 0; i < 8; i++) {
-      const side = Math.floor(i / 2)
-      if (pieceHolder.piece.sideTypes[side] == PieceSideType.castle) {
-        const castlePoints = this.getCastlePoints(x, y, i)
+      const side = Math.floor(i / 2);
+      if (pieceHolder.piece.sideTypes[side] === PieceSideType.castle) {
+        const castlePoints = this.getCastlePoints(x, y, i);
         if (this.castleIsReady(castlePoints)) {
           // console.log('castle is ready')
-          const castleCharacters = this.getAllCharacters().filter(c => {
-            return castlePoints.some(cp => {
+          const castleCharacters = this.getAllCharacters().filter((character) => {
+            return castlePoints.some((cp) => {
               return (
-                cp.octa === c.pos.octant &&
-                cp.x === c.x &&
-                cp.y === c.y
-              )
-            })
-          })
-          for (let k = 0; k < castleCharacters.length; k ++) {
-            const castleCharacter = castleCharacters[k]
-            if (characters.findIndex(c => {
+                cp.octa === character.pos.octant &&
+                cp.x === character.x &&
+                cp.y === character.y
+              );
+            });
+          });
+          for (let kk = 0; kk < castleCharacters.length; kk++) {
+            const castleCharacter = castleCharacters[kk];
+            if (characters.findIndex((character) => {
               return (
-                castleCharacter.x === c.x &&
-                castleCharacter.y === c.y &&
-                castleCharacter.pos.octant === c.pos.octant
-              )
+                castleCharacter.x === character.x &&
+                castleCharacter.y === character.y &&
+                castleCharacter.pos.octant === character.pos.octant
+              );
             }) === -1) {
-              characters.push(castleCharacter)
+              characters.push(castleCharacter);
             }
           }
         }
@@ -155,93 +124,93 @@ export class GameMap {
     // Monastery
     // TODO
 
-    return characters
+    return characters;
   }
 
-  clone() {
-    let newMap = new GameMap()
+  clone() : GameMap {
+    const newMap = new GameMap();
     newMap.pieceHolder = Object.keys(this.pieceHolder).reduce((
-      a: { [key: string]: IPieceHolder },
-      key
+      acc: { [key: string]: IPieceHolder },
+      key,
     ) => {
-      a[key] = {...this.pieceHolder[key]}
-      return a
-    }, {})
+      acc[key] = {...this.pieceHolder[key]};
+      return acc;
+    }, {});
     newMap.characterHolder = Object.keys(this.characterHolder).reduce((
-      a: { [key: string]: ICharacter },
-      key
+      acc: { [key: string]: ICharacter },
+      key,
     ) => {
-      a[key] = {...this.characterHolder[key]}
-      return a
-    }, {})
-    return newMap
+      acc[key] = {...this.characterHolder[key]};
+      return acc;
+    }, {});
+    return newMap;
   }
 
-  setPiece(x: number, y: number, piece: Piece) {
-    this.pieceHolder[`${x}|${y}`] = {x, y, piece, playerId: ''}
+  setPiece(x: number, y: number, piece: Piece) : void {
+    this.pieceHolder[`${x}|${y}`] = {x, y, piece, playerId: ''};
   }
 
-  setCharacter(x: number, y: number, pos: IPiecePos, playerId: string) {
-    const key = (`${x}|${y}|${pos.middle}|${pos.quadrant}|${pos.octant}`)
-    this.characterHolder[key] = {x, y, pos, playerId}
+  setCharacter(x: number, y: number, pos: IPiecePos, playerId: string) : void {
+    const key = (`${x}|${y}|${pos.middle}|${pos.quadrant}|${pos.octant}`);
+    this.characterHolder[key] = {x, y, pos, playerId};
   }
 
-  randomize(width: number, height: number) {
+  randomize(width: number, height: number) : void {
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
         for (let i = 0; i < 1000; i++) {
-          const randomPiece = allRotatedPieces[Math.floor(Math.random() * allRotatedPieces.length)]
+          const randomPiece = allRotatedPieces[Math.floor(Math.random() * allRotatedPieces.length)];
           if (this.pieceOkHere(x, y, randomPiece)) {
-            this.setPiece(x, y, randomPiece)
-            break
+            this.setPiece(x, y, randomPiece);
+            break;
           }
         }
       }
     }
   }
 
-  getAt(x: number, y: number) {
-    return this.pieceHolder[`${x}|${y}`]
+  getAt(x: number, y: number) :IPieceHolder| undefined {
+    return this.pieceHolder[`${x}|${y}`];
   }
 
-  isEmpty() {
-    return Object.keys(this.pieceHolder).length === 0
+  isEmpty() :boolean {
+    return Object.keys(this.pieceHolder).length === 0;
   }
 
-  pieceOkHere(x: number, y: number, piece: Piece) {
-    const isFirstPiece = this.isEmpty()
+  pieceOkHere(x: number, y: number, piece: Piece) :boolean {
+    const isFirstPiece = this.isEmpty();
 
     if (this.getAt(x, y) && !isFirstPiece) {
-      return false
+      return false;
     }
 
-    const left = this.getAt(x - 1, y)
-    const right = this.getAt(x + 1, y)
-    const top = this.getAt(x, y - 1)
-    const bottom = this.getAt(x, y + 1)
+    const left = this.getAt(x - 1, y);
+    const right = this.getAt(x + 1, y);
+    const top = this.getAt(x, y - 1);
+    const bottom = this.getAt(x, y + 1);
 
     if (!left && !right && !top && !bottom && !isFirstPiece) {
-      return false
+      return false;
     }
     if (left && left.piece.getRight() !== piece.getLeft()) {
-      return false
+      return false;
     }
     if (right && right.piece.getLeft() !== piece.getRight()) {
-      return false
+      return false;
     }
     if (bottom && bottom.piece.getTop() !== piece.getBottom()) {
-      return false
+      return false;
     }
     if (top && top.piece.getBottom() !== piece.getTop()) {
-      return false
+      return false;
     }
 
     // River pieces cant form u turn. That is solved so that the empty
     // river part must be on bottom or left
-    if (piece.sideTypes.some(s => s === PieceSideType.river)) {
+    if (piece.sideTypes.some((sideType) => sideType === PieceSideType.river)) {
       const riverSideCount = piece.sideTypes.reduce(
-        (a, i) => a + (i === PieceSideType.river ? 1 : 0), 0
-      )
+        (acc, st) => acc + (st === PieceSideType.river ? 1 : 0), 0,
+      );
 
       // Must touch previous river
       if (
@@ -250,65 +219,69 @@ export class GameMap {
         (top && piece.sideTypes[2] !== PieceSideType.river) ||
         (right && piece.sideTypes[3] !== PieceSideType.river)
       ) {
-        return false
+        return false;
       }
       // Bottom or right is empty (to avoid u turns)
       if (!bottom && piece.sideTypes[0] === PieceSideType.river) {
-        return true
+        return true;
       } else if (!right && piece.sideTypes[3] === PieceSideType.river) {
-        return true
+        return true;
       }
       if (riverSideCount === 1 && (left !== undefined || top !== undefined)) {
         // Last river piece must still be placeable
-        return true
+        return true;
       }
-      return false
+      return false;
     }
 
-    return true
+    return true;
   }
 
-  getRange() {
+  getRange() : {x:{min:number, max:number}, y:{min:number, max:number}} {
     if (this.isEmpty()) {
-      return {x: {min: 0, max: 0}, y: {min: 0, max: 0}}
+      return {x: {min: 0, max: 0}, y: {min: 0, max: 0}};
     }
     return {
       x: {
-        min: Math.min(...Object.values(this.pieceHolder).map(p => p.x)),
-        max: Math.max(...Object.values(this.pieceHolder).map(p => p.x)),
+        min: Math.min(...Object.values(this.pieceHolder).map((ph) => ph.x)),
+        max: Math.max(...Object.values(this.pieceHolder).map((ph) => ph.x)),
       },
       y: {
-        min: Math.min(...Object.values(this.pieceHolder).map(p => p.y)),
-        max: Math.max(...Object.values(this.pieceHolder).map(p => p.y)),
-      }
-    }
+        min: Math.min(...Object.values(this.pieceHolder).map((ph) => ph.y)),
+        max: Math.max(...Object.values(this.pieceHolder).map((ph) => ph.y)),
+      },
+    };
   }
 
-  getCastlePoints(firstX: number, firstY: number, octant: number) {
+  getCastlePoints(firstX: number, firstY: number, octant: number) : IOctant[] {
     const first: IOctant = {
       x: firstX,
       y: firstY,
       octa: octant,
-    }
+    };
 
-    let visited: IOctant[] = [first];
+    const visited: IOctant[] = [first];
 
     const pushToVisited = (octa: IOctant) => {
       if (!visited.some((existing) => {
-        return existing.x === octa.x && existing.y === octa.y && existing.octa === octa.octa
+        return existing.x === octa.x && existing.y === octa.y && existing.octa === octa.octa;
       })) {
-        visited.push(octa)
+        visited.push(octa);
       }
-    }
+    };
 
     for (let index = 0; index < visited.length; index++) {
-      let current = visited[index]
+      const current = visited[index];
       if (!current) {
         break;
       }
 
-      const thisPiece = this.getAt(current.x, current.y).piece
-      const octaIndex = thisPiece.sideConnections[current.octa]
+      const pieceHolder = this.getAt(current.x, current.y);
+      if (!pieceHolder) {
+        continue;
+      }
+      const thisPiece = pieceHolder.piece;
+      const octaIndex = thisPiece.sideConnections[current.octa];
 
       for (let i = 0; i < 8; i++) {
         if (thisPiece.sideConnections[i] === octaIndex) {
@@ -316,57 +289,57 @@ export class GameMap {
             x: current.x,
             y: current.y,
             octa: i,
-          }
-          pushToVisited(newOctant)
+          };
+          pushToVisited(newOctant);
         }
       }
 
-      const newOcta = octaToOpposite[current.octa]
+      const newOcta = octaToOpposite[current.octa];
 
       if ((Math.floor(current.octa / 2) === 0) && (this.getAt(current.x, current.y + 1))) {
-        pushToVisited({x: current.x, y: current.y + 1, octa: newOcta})
+        pushToVisited({x: current.x, y: current.y + 1, octa: newOcta});
       }
       if ((Math.floor(current.octa / 2) === 1) && (this.getAt(current.x - 1, current.y))) {
-        pushToVisited({x: current.x - 1, y: current.y, octa: newOcta})
+        pushToVisited({x: current.x - 1, y: current.y, octa: newOcta});
       }
       if ((Math.floor(current.octa / 2) === 2) && (this.getAt(current.x, current.y - 1))) {
-        pushToVisited({x: current.x, y: current.y - 1, octa: newOcta})
+        pushToVisited({x: current.x, y: current.y - 1, octa: newOcta});
       }
       if ((Math.floor(current.octa / 2) === 3) && (this.getAt(current.x + 1, current.y))) {
-        pushToVisited({x: current.x + 1, y: current.y, octa: newOcta})
+        pushToVisited({x: current.x + 1, y: current.y, octa: newOcta});
       }
     }
 
-    return visited
+    return visited;
   }
 
-  getRoadPoints(firstX: number, firstY: number, firstRoad: number) {
+  getRoadPoints(firstX: number, firstY: number, firstRoad: number):IQuadrant[] {
     const first: IQuadrant = {
       x: firstX,
       y: firstY,
       road: firstRoad,
-    }
+    };
 
-    let visited: IQuadrant[] = [first];
+    const visited: IQuadrant[] = [first];
 
     const pushToVisited = (thisRoad: IQuadrant) => {
       if (!visited.some((existing) => {
-        return existing.x === thisRoad.x && existing.y === thisRoad.y && existing.road === thisRoad.road
+        return existing.x === thisRoad.x && existing.y === thisRoad.y && existing.road === thisRoad.road;
       })) {
-        visited.push(thisRoad)
+        visited.push(thisRoad);
       }
-    }
+    };
 
     for (let index = 0; index < visited.length; index++) {
-      let current = visited[index]
+      const current = visited[index];
       if (!current) {
-        break
+        break;
       }
-      const thisPiece = this.getAt(current.x, current.y).piece
-      const roadIndex = thisPiece.roadConnections[current.road]
+      const thisPiece = this.getAt(current.x, current.y).piece;
+      const roadIndex = thisPiece.roadConnections[current.road];
 
       if (roadIndex === 0) {
-        return []
+        return [];
       }
 
       for (let i = 0; i < thisPiece.roadConnections.length; i++) {
@@ -375,43 +348,38 @@ export class GameMap {
             x: current.x,
             y: current.y,
             road: i,
-          }
-          pushToVisited(newRoad)
+          };
+          pushToVisited(newRoad);
         }
       }
-      const roadOpposites: { [key: number]: number } = {0: 2, 1: 3, 2: 0, 3: 1}
-      const newRoad = roadOpposites[current.road]
+      const roadOpposites: { [key: number]: number } = {0: 2, 1: 3, 2: 0, 3: 1};
+      const newRoad = roadOpposites[current.road];
 
       if ((current.road === 0) && (this.getAt(current.x, current.y + 1))) {
-        pushToVisited({x: current.x, y: current.y + 1, road: newRoad})
+        pushToVisited({x: current.x, y: current.y + 1, road: newRoad});
       }
       if ((current.road === 1) && (this.getAt(current.x - 1, current.y))) {
-        pushToVisited({x: current.x - 1, y: current.y, road: newRoad})
+        pushToVisited({x: current.x - 1, y: current.y, road: newRoad});
       }
       if ((current.road === 2) && (this.getAt(current.x, current.y - 1))) {
-        pushToVisited({x: current.x, y: current.y - 1, road: newRoad})
+        pushToVisited({x: current.x, y: current.y - 1, road: newRoad});
       }
       if ((current.road === 3) && (this.getAt(current.x + 1, current.y))) {
-        pushToVisited({x: current.x + 1, y: current.y, road: newRoad})
+        pushToVisited({x: current.x + 1, y: current.y, road: newRoad});
       }
     }
-    return visited
+    return visited;
   }
 
-  getAllCharacters() {
-    let allCharacters: ICharacter[] = [];
-
-    for (let key in this.characterHolder) {
-      allCharacters.push(this.characterHolder[key])
-    }
-    return allCharacters
+  getAllCharacters() :ICharacter[] {
+    return Object.values(this.characterHolder);
   }
 }
 
-export const createGameMap = (gameState: IGameState) => {
-  let newMap = new GameMap()
+export const createGameMap = (gameState: IGameState): GameMap => {
+  const newMap = new GameMap();
   for (let i = 0; i < gameState.pieceHolders.length; i++) {
-    const pieceHolder = gameState.pieceHolders[i]
+    const pieceHolder = gameState.pieceHolders[i];
     newMap.setPiece(
       pieceHolder.x,
       pieceHolder.y,
@@ -420,34 +388,34 @@ export const createGameMap = (gameState: IGameState) => {
         pieceHolder.piece.extraInfo,
         pieceHolder.piece.sideConnections,
         pieceHolder.piece.roadConnections,
-      )
-    )
+      ),
+    );
   }
   for (let i = 0; i < gameState.characters.length; i++) {
-    const character = gameState.characters[i]
-    newMap.setCharacter(character.x, character.y, character.pos, character.playerId)
+    const character = gameState.characters[i];
+    newMap.setCharacter(character.x, character.y, character.pos, character.playerId);
   }
-  newMap.players = gameState.players
-  return newMap
-}
+  newMap.players = gameState.players;
+  return newMap;
+};
 
-export const filterCharacters = (characters: ICharacter[], charactersToBeRemoved: ICharacter[]) => {
-  const newCharacters = characters.filter(c => {
-    if (charactersToBeRemoved.some(ctr => {
+export const filterCharacters = (characters: ICharacter[], charactersToBeRemoved: ICharacter[]): ICharacter[] => {
+  const newCharacters = characters.filter((character) => {
+    if (charactersToBeRemoved.some((ctr) => {
       if (
-        c.x === ctr.x &&
-        c.y === ctr.y &&
-        c.pos.octant === ctr.pos.octant &&
-        c.pos.quadrant === ctr.pos.quadrant &&
-        c.pos.middle === ctr.pos.middle
+        character.x === ctr.x &&
+        character.y === ctr.y &&
+        character.pos.octant === ctr.pos.octant &&
+        character.pos.quadrant === ctr.pos.quadrant &&
+        character.pos.middle === ctr.pos.middle
       ) {
-        return true
+        return true;
       }
-      return false
+      return false;
     })) {
-      return false
+      return false;
     }
-    return true
-  })
-  return newCharacters
-}
+    return true;
+  });
+  return newCharacters;
+};

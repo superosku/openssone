@@ -1,8 +1,8 @@
-import './MainMenu.scss'
+import './MainMenu.scss';
 import {Link} from "react-router-dom";
 import React from "react";
 
-export const MainMenu = () => {
+export const MainMenu = (): JSX.Element => {
   return <nav className={'main-menu'}>
     <ul>
       <li><Link to={'/'}>Try</Link></li>
@@ -10,5 +10,5 @@ export const MainMenu = () => {
       <li><Link to={'/pieces'}>Pieces</Link></li>
       <li><Link to={'/games'}>Games</Link></li>
     </ul>
-  </nav>
-}
+  </nav>;
+};

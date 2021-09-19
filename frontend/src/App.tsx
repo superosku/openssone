@@ -1,50 +1,49 @@
 import React from 'react';
 import './App.scss';
-import {getImageDataUrl} from "./utils";
-import {MapDisplay} from "./components/MapDisplay";
-import {MainMenu} from './components/MainMenu'
-import {Games} from './layouts/Games'
-
 import {
   BrowserRouter as Router,
   Switch,
   Route,
 } from "react-router-dom";
+import {GameMap, allPieces} from "common";
+
+import {getImageDataUrl} from "./utils";
+import {MapDisplay} from "./components/MapDisplay";
+import {MainMenu} from './components/MainMenu';
+import {Games} from './layouts/Games';
 import {OnlineGame} from "./layouts/OnlineGame";
 import {OfflineGame} from "./layouts/OfflineGame";
-import {GameMap} from "common"
-import {allPieces} from "common"
 import {ToastProvider} from "./ToastProvider";
 
-const GeneratedMap = () => {
-  const [map, setMap] = React.useState(new GameMap())
+const GeneratedMap = (): JSX.Element => {
+  const [map, setMap] = React.useState(new GameMap());
 
   React.useEffect(() => {
-    let newMap = map.clone()
-    newMap.randomize(15, 15)
-    setMap(newMap)
-  }, [])
+    const newMap = map.clone();
+    newMap.randomize(15, 15);
+    setMap(newMap);
+  }, []);
 
   return <div className={'main-limited'}>
     <MapDisplay map={map}/>
-  </div>
-}
+  </div>;
+};
 
-const AllPieces = () => {
+const AllPieces = (): JSX.Element => {
   return <div className={'main-limited'}>
     <div className="outer">
-      {allPieces.map(piece => {
+      {allPieces.map((piece) => {
         return <div className={"inner"} key={piece.getHash()}>
-          {[0, 1, 2, 3].map(rotation => {
-            return <img key={rotation} src={getImageDataUrl(piece.getRotated(rotation))}/>
+          {[0, 1, 2, 3].map((rotation) => {
+            return <img key={rotation} src={getImageDataUrl(piece.getRotated(rotation))}/>;
           })}
-        </div>
+        </div>;
       })}
     </div>
-  </div>
-}
+  </div>;
+};
 
-const App = () => {
+const App = (): JSX.Element => {
   return <Router>
     <ToastProvider>
       <div className={'main-container'}>
@@ -58,7 +57,7 @@ const App = () => {
         </Switch>
       </div>
     </ToastProvider>
-  </Router>
-}
+  </Router>;
+};
 
 export default App;

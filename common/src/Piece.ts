@@ -16,7 +16,7 @@ export enum PieceExtraInfo {
 export class Piece {
   // bottom, left, top, right
   sideTypes: [PieceSideType, PieceSideType, PieceSideType, PieceSideType];
-  extraInfo: PieceExtraInfo
+  extraInfo: PieceExtraInfo;
   sideConnections: [number, number, number, number, number, number, number, number];
   roadConnections: [number, number, number, number];
 
@@ -24,40 +24,40 @@ export class Piece {
     sideTypes: [PieceSideType, PieceSideType, PieceSideType, PieceSideType],
     extraInfo: PieceExtraInfo = PieceExtraInfo.empty,
     sideConnections: [number, number, number, number, number, number, number, number] = [1, 2, 3, 4, 5, 6, 7, 8],
-    roadConnections: [number, number, number, number] = [0, 0, 0, 0]
+    roadConnections: [number, number, number, number] = [0, 0, 0, 0],
   ) {
-    this.sideTypes = sideTypes
-    this.extraInfo = extraInfo
-    this.sideConnections = sideConnections
-    this.roadConnections = roadConnections
+    this.sideTypes = sideTypes;
+    this.extraInfo = extraInfo;
+    this.sideConnections = sideConnections;
+    this.roadConnections = roadConnections;
   }
 
-  asJson() {
+  asJson() { // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
     return {
       sideTypes: this.sideTypes,
       extraInfo: this.extraInfo,
       sideConnections: this.sideConnections,
       roadConnections: this.roadConnections,
-    }
+    };
   }
 
-  getBottom() {
-    return this.sideTypes[0]
+  getBottom() : PieceSideType {
+    return this.sideTypes[0];
   }
 
-  getLeft() {
-    return this.sideTypes[1]
+  getLeft() :PieceSideType {
+    return this.sideTypes[1];
   }
 
-  getTop() {
-    return this.sideTypes[2]
+  getTop(): PieceSideType {
+    return this.sideTypes[2];
   }
 
-  getRight() {
-    return this.sideTypes[3]
+  getRight(): PieceSideType {
+    return this.sideTypes[3];
   }
 
-  getRotated(rotation: number) {
+  getRotated(rotation: number) : Piece {
     return new Piece(
       [
         this.sideTypes[(0 + rotation) % 4],
@@ -81,18 +81,13 @@ export class Piece {
         this.roadConnections[(1 + rotation) % 4],
         this.roadConnections[(2 + rotation) % 4],
         this.roadConnections[(3 + rotation) % 4],
-      ]
-    )
+      ],
+    );
   }
 
-  getHash() {
-    return `${this.sideTypes[0]}-${this.sideTypes[1]}-${this.sideTypes[2]}-${this.sideTypes[3]}-${this.extraInfo}`
+  getHash() : string {
+    return `${this.sideTypes[0]}-${this.sideTypes[1]}-${this.sideTypes[2]}-${this.sideTypes[3]}-${this.extraInfo}`;
   }
 }
 
-export interface IPiece extends Piece {
-  // sideTypes: [number, number, number, number],
-  // extraInfo: number,
-  // sideConnections: [number, number, number, number, number, number, number, number],
-  // roadConnections: [number, number, number, number],
-}
+export type IPiece = Piece

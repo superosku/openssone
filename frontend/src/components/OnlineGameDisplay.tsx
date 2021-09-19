@@ -1,11 +1,11 @@
-import './OnlineGameDisplay.scss'
-import {BaseGame} from "./BaseGame";
+import './OnlineGameDisplay.scss';
 import React from "react";
+import {GameMap, IPiecePos, IGameInfo, Piece} from "common";
+
 import {ILatestPings} from "../layouts/OnlineGame";
-import {GameMap, IPiecePos} from "common";
+
 import {PlayerList} from "./PlayerList";
-import {IGameInfo} from "common";
-import {Piece} from "common";
+import {BaseGame} from "./BaseGame";
 
 interface IOnlineGameDisplayProps {
   gameInfo: IGameInfo
@@ -26,8 +26,8 @@ export const OnlineGameDisplay = (
     onCharacterSet,
     placeablePiece,
     children,
-  }: IOnlineGameDisplayProps
-) => {
+  }: IOnlineGameDisplayProps,
+): JSX.Element => {
 
   return <>
     <div className={'hovering-players-container'}>
@@ -38,7 +38,6 @@ export const OnlineGameDisplay = (
       map={map}
       onSetPiece={onPieceSet}
       onSetCharacter={onCharacterSet}
-      children={children}
-    />
-  </>
-}
+    >{children}</BaseGame>
+  </>;
+};

@@ -1,5 +1,4 @@
-import {ICharacter, IPieceHolder} from "./GameMap"
-import {IPiece} from "./Piece";
+import {IPiece, Piece} from "./Piece";
 
 export interface IPlayer {
   name: string,
@@ -30,4 +29,37 @@ export interface IGameInfo {
   meta: {
     you: IPlayer
   },
+}
+
+export interface IPieceHolder {
+  piece: Piece
+  playerId: string,
+  x: number
+  y: number
+}
+
+export interface IOctant {
+  x: number
+  y: number
+  octa: number
+}
+
+export interface IQuadrant {
+  x: number
+  y: number
+  road: number
+}
+
+export interface IPiecePos {
+  quadrant: number | undefined
+  octant: number | undefined
+  middle: boolean
+}
+
+export interface ICharacter {
+  x: number
+
+  y: number
+  pos: IPiecePos
+  playerId: string
 }
