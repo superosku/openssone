@@ -145,3 +145,16 @@ html, body, #root, .main-container {
 .player-7 {
   color: #9d9d9d;
 }
+
+.btn {
+  border: none;
+  background-color: #73513a;
+  color: white;
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #986b4c;
+  }
+}
