@@ -38,6 +38,18 @@ export const defaultPieces = [
     [1, 2, 3, 4],
   ),
   new Piece(
+    [PieceSideType.castle, PieceSideType.empty, PieceSideType.empty, PieceSideType.empty],
+    PieceExtraInfo.pointyCastle,
+    [1, 1, 2, 2, 3, 3, 3, 3],
+    [0, 0, 0, 0],
+  ),
+  new Piece(
+    [PieceSideType.castle, PieceSideType.empty, PieceSideType.empty, PieceSideType.castle],
+    PieceExtraInfo.pointyCastle,
+    [1, 1, 2, 2, 3, 3, 4, 4],
+    [0, 1, 1, 0],
+  ),
+  new Piece(
     [PieceSideType.castle, PieceSideType.road, PieceSideType.road, PieceSideType.castle],
     undefined,
     [1, 1, 2, 3, 3, 2, 1, 1],

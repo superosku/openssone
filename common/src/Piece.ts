@@ -11,6 +11,7 @@ export enum PieceExtraInfo {
   oppositeCastleFull,
   monastery,
   nonConnectedSideBySideCastle,
+  pointyCastle
 }
 
 export class Piece {

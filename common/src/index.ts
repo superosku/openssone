@@ -3,3 +3,4 @@ export * from './defaultPieces';
 export * from './game';
 export * from './GameMap';
 export * from './Piece';
+export * from './utils';

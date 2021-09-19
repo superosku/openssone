@@ -132,7 +132,7 @@ export const getImageDataUrl = (piece: Piece): string => {
             dist = 22;
           }
           if (piece.sideTypes[(i + 2) % 4] === PieceSideType.castle) {
-            dist = -13;
+            dist = 2;
           }
           ctx.beginPath();
           ctx.moveTo(0, dist);
@@ -181,7 +181,8 @@ export const getImageDataUrl = (piece: Piece): string => {
         // Drawing handled in another side (only draw corners once)
         piece.sideTypes[(i + 4 - 1) % 4] !== PieceSideType.castle ||
         // Except when non connected corner case...
-        piece.extraInfo === PieceExtraInfo.nonConnectedSideBySideCastle
+        piece.extraInfo === PieceExtraInfo.nonConnectedSideBySideCastle ||
+        piece.extraInfo === PieceExtraInfo.pointyCastle
       )
     ) {
       ctx.fillStyle = colorCastle;
@@ -194,8 +195,8 @@ export const getImageDataUrl = (piece: Piece): string => {
         // Handle 3 sided castle
         ctx.beginPath();
         ctx.moveTo(50, -50);
-        ctx.lineTo(-15, -25);
-        ctx.lineTo(-15, 25);
+        ctx.lineTo(0, -25);
+        ctx.lineTo(0, 25);
         ctx.lineTo(50, 50);
         ctx.lineTo(-50, 50);
         ctx.lineTo(-50, -50);
@@ -204,8 +205,8 @@ export const getImageDataUrl = (piece: Piece): string => {
         for (let j = 0; j < 2; j++) {
           ctx.beginPath();
           ctx.moveTo(50, -50);
-          ctx.lineTo(-15, -25);
-          ctx.lineTo(-15, 25);
+          ctx.lineTo(0, -25);
+          ctx.lineTo(0, 25);
           ctx.lineTo(50, 50);
           ctx.stroke();
           ctx.setLineDash([3, 3]);
@@ -215,7 +216,8 @@ export const getImageDataUrl = (piece: Piece): string => {
         ctx.lineWidth = 5;
       } else if (
         piece.sideTypes[(i + 1) % 4] === PieceSideType.castle &&
-        piece.extraInfo !== PieceExtraInfo.nonConnectedSideBySideCastle
+        piece.extraInfo !== PieceExtraInfo.nonConnectedSideBySideCastle &&
+        piece.extraInfo !== PieceExtraInfo.pointyCastle
       ) {
         // Handle 2 sided castle
         ctx.beginPath();
@@ -238,6 +240,33 @@ export const getImageDataUrl = (piece: Piece): string => {
       } else {
         // Handle single castle
         if (
+          piece.sideTypes[(i + 1) % 4] !== PieceSideType.castle &&
+          piece.extraInfo === PieceExtraInfo.pointyCastle
+        ) {
+          ctx.beginPath();
+          ctx.moveTo(50, 50);
+          ctx.lineTo(-20, -40);
+          ctx.lineTo(-50, -50);
+          ctx.lineTo(-30, -20);
+          ctx.lineTo(-30, 20);
+          ctx.lineTo(-50, 50);
+          ctx.fill();
+
+          for (let j = 0; j < 2; j++) {
+            ctx.beginPath();
+            ctx.moveTo(50, 50);
+            ctx.lineTo(-20, -40);
+            ctx.lineTo(-50, -50);
+            ctx.lineTo(-30, -20);
+            ctx.lineTo(-30, 20);
+            ctx.lineTo(-50, 50);
+            ctx.stroke();
+            ctx.setLineDash([3, 3]);
+            ctx.lineWidth = 8;
+          }
+          ctx.setLineDash([]);
+          ctx.lineWidth = 5;
+        } else if (
           piece.sideTypes[(i + 2) % 4] === PieceSideType.castle &&
           piece.extraInfo === PieceExtraInfo.oppositeCastleFull
         ) {

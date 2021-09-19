@@ -335,7 +335,11 @@ export class GameMap {
       if (!current) {
         break;
       }
-      const thisPiece = this.getAt(current.x, current.y).piece;
+      const pieceHolder = this.getAt(current.x, current.y);
+      if (!pieceHolder) {
+        break;
+      }
+      const thisPiece = pieceHolder.piece;
       const roadIndex = thisPiece.roadConnections[current.road];
 
       if (roadIndex === 0) {
